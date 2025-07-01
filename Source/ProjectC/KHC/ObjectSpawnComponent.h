@@ -14,7 +14,8 @@ class PROJECTC_API UObjectSpawnComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UObjectSpawnComponent();
-	
+	UFUNCTION(BlueprintCallable)
+	void SpawnObjectAt(TSubclassOf<AActor> ActorClass);
 
 protected:
 	// Called when the game starts

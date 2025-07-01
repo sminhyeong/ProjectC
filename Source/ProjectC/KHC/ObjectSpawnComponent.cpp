@@ -2,15 +2,30 @@
 
 
 #include "ObjectSpawnComponent.h"
+#include "Engine/World.h"
+#include "GameFramework/Actor.h"
 
 // Sets default values for this component's properties
 UObjectSpawnComponent::UObjectSpawnComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
+}
+
+void UObjectSpawnComponent::SpawnObjectAt(TSubclassOf<AActor> ActorClass)
+{
+	if (!GetOwner() || !GetOwner()->HasAuthority())
+	{
+		return;
+	}
+	else
+	{
+		FTransform SpawnTransform = GetOwner()->GetTransform();
+		GetWorld()->SpawnActor<AActor>(ActorClass,SpawnTransform);
+	}
 }
 
 
@@ -21,7 +36,8 @@ void UObjectSpawnComponent::BeginPlay()
 	
 	if (bAutoSpawn && IsValid(SpawnClass) && !HasSpawned)
 	{
-
+		SpawnObjectAt(SpawnClass);
+		HasSpawned = true;
 	}
 	
 }

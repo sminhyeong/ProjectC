@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -24,5 +24,12 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+public:
+	// 인벤토리 내부의 아이템 데이터 배열을 InventoryDataManager에 요청
+	void ReqInventoryData();
+
+	void RecvInventoryData(const TArray<int32>& NewInventoryData);
+
+private:
+	TArray<int32> InventoryData;
 };

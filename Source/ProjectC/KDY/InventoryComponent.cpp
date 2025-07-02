@@ -32,3 +32,12 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// ...
 }
 
+void UInventoryComponent::ReqInventoryData()
+{
+
+}
+
+void UInventoryComponent::RecvInventoryData(const TArray<int32>& NewInventoryData)
+{
+	InventoryData = NewInventoryData;
+}

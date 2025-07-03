@@ -15,17 +15,21 @@ UObjectSpawnComponent::UObjectSpawnComponent()
 	// ...
 }
 
-void UObjectSpawnComponent::SpawnObjectAt(TSubclassOf<AActor> ActorClass)
+void UObjectSpawnComponent::SpawnObjectAt()
 {
 	if (!GetOwner() || !GetOwner()->HasAuthority())
 	{
 		return;
 	}
-	else
+
+	TSubclassOf<AActor> SelectedClass = GetSpawnClassFromType();
+	if (!SelectedClass)
 	{
-		FTransform SpawnTransform = GetOwner()->GetTransform();
-		GetWorld()->SpawnActor<AActor>(ActorClass,SpawnTransform);
+		UE_LOG(LogTemp, Warning, TEXT("선택된 클래스가 없습니다."));
+		return;
 	}
+	FTransform SpawnTransform = GetOwner()->GetTransform();
+	GetWorld()->SpawnActor<AActor>(SelectedClass,SpawnTransform);
 }
 
 
@@ -34,12 +38,11 @@ void UObjectSpawnComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (bAutoSpawn && IsValid(SpawnClass) && !HasSpawned)
-	{
-		SpawnObjectAt(SpawnClass);
+	if (bAutoSpawn && !HasSpawned)
+	{	
+		SpawnObjectAt();
 		HasSpawned = true;
 	}
-	
 }
 
 
@@ -49,5 +52,18 @@ void UObjectSpawnComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...   
+}
+
+TSubclassOf<AActor> UObjectSpawnComponent::GetSpawnClassFromType() const
+{
+	const TSubclassOf<AActor>* FoundClass = SpawnClassMap.Find(SpawnObjectType);
+
+	if (FoundClass && FoundClass)
+	{
+		return *FoundClass;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("SpawnClassMap에 해당 타입이 없거나 비어 있습니다!"));
+	return nullptr;
 }
 

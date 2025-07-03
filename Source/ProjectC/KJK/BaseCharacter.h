@@ -11,7 +11,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class UInputMappingContext;
 class UInputAction;
-bool IsPlayer;
+
 
 
 

@@ -36,4 +36,19 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Camera")
+	TObjectPtr<UCameraComponent> Camera;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "SpringArm")
+	TObjectPtr<USpringArmComponent> SpringArm;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
+	TObjectPtr<UInputMappingContext> InputAction;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> Move;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> Look;
+
 };

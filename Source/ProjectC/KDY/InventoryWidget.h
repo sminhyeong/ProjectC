@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "ItemBase.h"
 #include "InventoryWidget.generated.h"
 
+class AItemBase;
+class UTileView;
 /**
  * 
  */
@@ -14,4 +17,11 @@ class PROJECTC_API UInventoryWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+	UFUNCTION(BlueprintCallable)
+	void UpdateItemList(const TArray<FRPGItemData> ItemList);
+
+public:
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	TObjectPtr<UTileView> TileView_Items;
 };

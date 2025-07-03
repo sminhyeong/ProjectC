@@ -71,4 +71,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+public:
+    UPROPERTY(BlueprintReadWrite)
+    FRPGItemData ItemData;
+
 };

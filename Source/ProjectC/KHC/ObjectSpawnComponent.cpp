@@ -58,7 +58,7 @@ TSubclassOf<AActor> UObjectSpawnComponent::GetSpawnClassFromType() const
 {
 	const TSubclassOf<AActor>* FoundClass = SpawnClassMap.Find(SpawnObjectType);
 
-	if (FoundClass && FoundClass)
+	if (FoundClass && *FoundClass)
 	{
 		return *FoundClass;
 	}

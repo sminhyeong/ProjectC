@@ -50,7 +50,7 @@ bool AInventoryManager::C2S_AddItem_Validate(FRPGItemData NewItemData)
 		default:
 			break;
 	}
-	if (CheckList.Num() >= MaxItemPerCategory - 1)
+	if (CheckList.Num() >= MaxItemPerCategory)
 	{
 		InventoryIsFull();
 		return false;

@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "KDY/ItemStruct.h"
+//#include "KDY/ItemStruct.h"
+#include "RewardItemData.h"
 #include "RewardActorComponent.generated.h"
 
 UENUM(BlueprintType)
@@ -31,12 +32,12 @@ protected:
 public:	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Reward")
-	TArray<FItemStruct> RewardItems;
+	TArray<FRewardItemData> RewardItems;
 
 	UFUNCTION(BlueprintCallable)
 	void RewardToPlayer(AActor* InstigatorActor);
 
 	UFUNCTION(BlueprintCallable)
-	void RewardWidget(const TArray<FItemStruct>& ItemToShow, AActor* PlayerActor);
+	void RewardWidget(const TArray<FRewardItemData>& ItemToShow, AActor* PlayerActor);
 		
 };

@@ -4,55 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ItemStruct.h"
 #include "ItemBase.generated.h"
-
-UENUM(BlueprintType)
-enum class EItemCategory : uint8
-{
-    NONE UMETA(DisplayName = "없음"),
-    WEAPON UMETA(DisplayName = "무기"),
-    ARMOR UMETA(DisplayName = "방어구"),
-    CONSUME UMETA(DisplayName = "소모품"),
-};
-
-USTRUCT(BlueprintType)
-struct FRPGItemInfo
-{
-    GENERATED_BODY()
-
-public:
-    UPROPERTY(BlueprintReadWrite)
-    int32 Id;
-
-    UPROPERTY(BlueprintReadWrite)
-    FString Name;
-
-    UPROPERTY(BlueprintReadWrite)
-    EItemCategory Category;
-
-    UPROPERTY(BlueprintReadWrite)
-    int32 MeshIndex;
-
-    UPROPERTY(BlueprintReadWrite)
-    int32 TextureIndex;
-
-    UPROPERTY(BlueprintReadWrite)
-    FString Description;
-};
-
-USTRUCT(BlueprintType)
-struct FRPGItemData
-{
-    GENERATED_BODY()
-
-public:
-    UPROPERTY(BlueprintReadWrite)
-    FRPGItemInfo ItemInfo;
-
-    // 아이템 개수
-    UPROPERTY(BlueprintReadWrite)
-    int32 Number;
-};
 
 UCLASS()
 class PROJECTC_API AItemBase : public AActor

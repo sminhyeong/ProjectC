@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ItemBase.h"
+#include "ItemStruct.h"
 #include "InventoryManager.generated.h"
 
 class AItemBase;

@@ -2,6 +2,7 @@
 
 
 #include "InventoryWidget.h"
+#include "ItemStruct.h"
 #include "Components/TileView.h"
 #include "InventorySlotWidget.h"
 #include "Components/Image.h"

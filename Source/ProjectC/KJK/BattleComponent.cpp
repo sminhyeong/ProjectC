@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "GameFramework/Actor.h"
+#include "CharacterStateComponent.h"
 
 
 
@@ -38,7 +39,7 @@ void UBattleComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	// ...
 }
 
-void UBattleComponent::Attack()
+void UBattleComponent::Attack(FSkillClass Skill)
 {
 	AActor* Owner = GetOwner();
 	if (!Owner || bIsAttacking || bIsDead) return;
@@ -61,9 +62,6 @@ void UBattleComponent::Attack()
 		if (AttackMontage)
 		{
 			AnimInstance->Montage_Play(AttackMontage);
-
-		
-
 			// 일정 시간 뒤 공격 종료
 			GetWorld()->GetTimerManager().SetTimer(
 				AttackEndTimerHandle,
@@ -74,6 +72,10 @@ void UBattleComponent::Attack()
 			);
 		}
 	}
+	UE_LOG(LogTemp, Log, TEXT("%s Used / Mana %.1f Used / DMG is %.1f"),
+		*Skill.SkillName,
+		Skill.SkillCostMana,
+		Skill.DMG);
 
 }
 void UBattleComponent::EndAttack()
@@ -82,9 +84,7 @@ void UBattleComponent::EndAttack()
 }
 
 
-
-void UBattleComponent::TryHitTarget(UParticleSystem* HitEffect,
-	float DMG)
+void UBattleComponent::TryHitTarget(FSkillClass Skill)
 {
 	//캐스팅해서 가져와야할 것들
 	
@@ -119,13 +119,11 @@ void UBattleComponent::TryHitTarget(UParticleSystem* HitEffect,
 		UE_LOG(LogTemp, Log, TEXT("Hit %s"), *Hit.GetActor()->GetName());
 
 		// 데이터 테이블에서 데미지 전달
-		if (UCharacterStateComponent* State = Hit.GetActor()->FindComponentByClass<UCharacterStateComponent>())
-		{
-			State->AddDamage( DMG, FDamageClass(), Owner);
- 		}
+		
+
 
 		// 피격 이펙트, 사운드 등 처리
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, Hit.ImpactPoint);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Skill.HitEffect, Hit.ImpactPoint);
 	}
 }
 

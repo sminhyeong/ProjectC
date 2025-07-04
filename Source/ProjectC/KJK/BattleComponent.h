@@ -5,8 +5,13 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
-#include "CharacterStateComponent.h"
 #include "BattleComponent.generated.h"
+
+//Setting in Character,Battle,SkillObject.
+
+
+
+//임시로 사용할 구조체- 스킬
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -26,23 +31,19 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	//*공격
+	//*공격 - 기본 공격도 스킬과 동일
 	// 자리 고정, 애니메이션 출력 - 공격 판정(TryHitTarget) 연결
+	
 	UFUNCTION(BlueprintCallable)
-	void Attack();
+	void Attack(FSkillClass Skill);
 	//공격 종료
 	UFUNCTION(BlueprintCallable)
 	void EndAttack();
 
-	//Notify 필요
-	
-
 	//*공격판정
 	// 데미지 강할시 화면 흔들림 조건,FX
 	UFUNCTION(BlueprintCallable)
-	
-	void TryHitTarget(UParticleSystem* HitEffect,
-		float DMG);
+	void TryHitTarget(FSkillClass Skill);
 
 	//*받는 데미지
 	//데미지 여부에따라  화면 흔들림 강도 조건, FX, 유발
@@ -68,7 +69,6 @@ public:
 	FTimerHandle AttackHitTimerHandle;
 
 	FTimerHandle AttackEndTimerHandle;
-
 
 	UParticleSystem* EmitterTemplate;
 };

@@ -37,18 +37,36 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 
+	void Move(const FInputActionValue& Value);
+
+	void Look(const FInputActionValue& Value);
+
+	void Zoom(const FInputActionValue& Value);
+
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Camera")
 	TObjectPtr<UCameraComponent> Camera;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "SpringArm")
 	TObjectPtr<USpringArmComponent> SpringArm;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
-	TObjectPtr<UInputMappingContext> InputAction;
+	TObjectPtr<UInputMappingContext> IMC_Default;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> Move;
+	TObjectPtr<UInputAction> IA_Move;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
-	TObjectPtr<UInputAction> Look;
+	TObjectPtr<UInputAction> IA_Look;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> IA_Jump;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> IA_Zoom;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> IA_Attack;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> IA_Skill1;
 };

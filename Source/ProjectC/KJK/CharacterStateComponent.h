@@ -19,8 +19,9 @@
 		7. 캐릭터 셋팅
  
 */
+
 USTRUCT(BlueprintType)
-struct FDamageClass
+struct FSkillClass
 {
 	GENERATED_BODY()
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -33,29 +34,57 @@ struct FDamageClass
 	float Multiplier;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DMG;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float SkillCostMana;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+
+	UParticleSystem* HitEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* SkillMontage;
+};
+
+
+
+USTRUCT(BlueprintType)
+struct FStatMax
+{
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	FString CharacterName;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Max")
+	float MaxHP;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Max")
+	float MaxMP;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Max")
+	float MaxShield;
 };
 
 USTRUCT(BlueprintType)
 struct FCharacterState
 {
 	GENERATED_BODY()
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
 	float CurHP;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MaxHP;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
 	float CurMP;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MaxMP;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	float CurShield;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MaxShield;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float AttackPower;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	FStatMax MaxStats;
 };
 
+//----------------------------//
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTC_API UCharacterStateComponent : public UActorComponent
 {
@@ -75,25 +104,25 @@ public:
 
 	//데미지
 	UFUNCTION(BlueprintCallable)
-	void AddDamage(float Damage, FDamageClass DamageType, AActor* Instigate);
+	float AddDamage(FSkillClass Skill,float& OutHP, float& OutShield);
 
 
 	UFUNCTION(BlueprintCallable)
 
-	void AddHeal(float Amount, FDamageClass DamageType, AActor* Instigate);
+	float AddHeal(float Amount, FSkillClass DamageType, AActor* Instigate);
 
 	UFUNCTION(BlueprintCallable)
 
-	void AddMP(float Amount, FDamageClass DamageType, AActor* Instigate);
+	float AddMP(float Amount, FSkillClass DamageType, AActor* Instigate);
 
 
 	UFUNCTION(BlueprintCallable)
 
-	void UseMP(float Amount, FDamageClass DamageType, FCharacterState CharData);
+	float UseMP(float Amount, FSkillClass DamageType, FCharacterState CharData);
 	
 	UFUNCTION(BlueprintCallable)
 
-	void AddShield(float Damage, FDamageClass DamageType, AActor* Instigate);
+	float AddShield(float Damage, FSkillClass DamageType, AActor* Instigate);
 
 	//캐릭터 스테이트
 	UFUNCTION(BlueprintCallable)
@@ -121,5 +150,8 @@ public:
 	// 들어오는 데이터가 구조체로 저장되는 변수들
 	FCharacterState BaseState;
 	FCharacterState AdditionalState;
-	FDamageClass Skill;
+	FSkillClass Skill;
+
+
+
 };

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
+#include "BattleStruct.h"
 #include "CharacterStateComponent.generated.h"
 /* <summary>
  1. 구조체 ->나중에 데이터 테이블로 대체 될 것들
@@ -20,69 +21,6 @@
  
 */
 
-USTRUCT(BlueprintType)
-struct FSkillClass
-{
-	GENERATED_BODY()
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString SkillName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString Type;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Multiplier;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DMG;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float SkillCostMana;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-
-	UParticleSystem* HitEffect;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* SkillMontage;
-};
-
-
-
-USTRUCT(BlueprintType)
-struct FStatMax
-{
-	GENERATED_BODY()
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
-	FString CharacterName;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Max")
-	float MaxHP;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Max")
-	float MaxMP;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Max")
-	float MaxShield;
-};
-
-USTRUCT(BlueprintType)
-struct FCharacterState
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
-	float CurHP;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
-	float CurMP;
-	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
-	float CurShield;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
-	FStatMax MaxStats;
-};
 
 //----------------------------//
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )

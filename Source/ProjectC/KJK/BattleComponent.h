@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
+#include "BattleStruct.h"
 #include "BattleComponent.generated.h"
 
 //Setting in Character,Battle,SkillObject.

@@ -57,6 +57,4 @@ private:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInventoryWidget> InventoryWidget;
 
-	/*UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TArray<UTexture> ItemImageList;*/
 };

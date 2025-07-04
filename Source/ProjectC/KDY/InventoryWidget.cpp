@@ -6,7 +6,6 @@
 #include "Components/TileView.h"
 #include "InventorySlotWidget.h"
 #include "Components/Image.h"
-// #include "Styling/SlateBrush.h"
 
 void UInventoryWidget::UpdateItemList(const TArray<FRPGItemData> ItemList)
 {
@@ -14,12 +13,11 @@ void UInventoryWidget::UpdateItemList(const TArray<FRPGItemData> ItemList)
 
 	for (auto item : ItemList)
 	{
-		UInventorySlotWidget* NewItemSlot = CreateWidget<UInventorySlotWidget>(this, UInventorySlotWidget::StaticClass());
+		UInventorySlotWidget* NewItemSlot = CreateWidget<UInventorySlotWidget>(this, InventorySlotWidgetClass);
 		if (NewItemSlot)
 		{
-			// FSlateBrush NewBrush = NewItemSlot->Image_Item->GetBrush();
-			// NewBrush.SetResourceObject(item.ItemInfo.TextureIndex);
-			// NewItemSlot->Image_Item->SetBrush(NewBrush);
+			NewItemSlot->Image_Item->SetBrushFromTexture(item.ItemInfo.Texture);
+			// UE_LOG(LogTemp, Warning, TEXT("ItemTexture : %s"), *item.ItemInfo.Texture.GetName());
 			TileView_Items->AddItem(NewItemSlot);
 		}
 	}

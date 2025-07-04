@@ -9,6 +9,7 @@
 
 class AItemBase;
 class UTileView;
+class UInventorySlotWidget;
 /**
  * 
  */
@@ -22,6 +23,12 @@ public:
 	void UpdateItemList(const TArray<FRPGItemData> ItemList);
 
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<UInventorySlotWidget> InventorySlotWidgetClass;
+
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UTileView> TileView_Items;
+
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	EItemCategory NowWatchCategory{ EItemCategory::WEAPON };
 };

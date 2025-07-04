@@ -19,12 +19,17 @@ class PROJECTC_API UInventorySlotWidget : public UUserWidget, public IUserObject
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
 	TObjectPtr<UButton>	Button_Item;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
 	TObjectPtr<UImage> Image_Item;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
 	TObjectPtr<UTextBlock> Text_ItemNumber;
+
+public:
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UTexture2D> ItemSlotImage;
+
 };

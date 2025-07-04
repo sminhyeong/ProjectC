@@ -85,8 +85,10 @@ void AInventoryManager::C2S_AddItem_Implementation(FRPGItemData NewItemData)
 		default:
 			break;
 	}
-
-	S2C_UpdateInventory(NewItemData.ItemInfo.Category);
+	if (NewItemData.ItemInfo.Category == InventoryWidget->NowWatchCategory)
+	{
+		S2C_UpdateInventory(NewItemData.ItemInfo.Category);
+	}
 }
 
 void AInventoryManager::S2C_UpdateInventory_Implementation(EItemCategory UpdateListCategory)

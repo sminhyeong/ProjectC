@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "CharacterStateComponent.h"
@@ -14,7 +14,7 @@ UCharacterStateComponent::UCharacterStateComponent()
 
 	// ...
 }
-//µ•πÃ¡ˆ - Ω«µÂ √ﬂ∞°
+//Îç∞ÎØ∏ÏßÄ - Ïã§Îìú Ï∂îÍ∞Ä
 float UCharacterStateComponent::AddDamage(FSkillClass InSkill, float& OutHP, float& OutShield)
 {
 
@@ -29,7 +29,7 @@ float UCharacterStateComponent::AddDamage(FSkillClass InSkill, float& OutHP, flo
 			CurShield -= ShieldDamage;
 			InSkill.DMG -= ShieldDamage;
 		}
-		// ≥≤¿∫ µ•πÃ¡ˆ∏¶ √º∑¬ø° ¿˚øÎ
+		// ÎÇ®ÏùÄ Îç∞ÎØ∏ÏßÄÎ•º Ï≤¥Î†•Ïóê Ï†ÅÏö©
 		if (InSkill.DMG > 0.f)
 		{
 			CurHP -= InSkill.DMG;
@@ -44,7 +44,7 @@ float UCharacterStateComponent::AddDamage(FSkillClass InSkill, float& OutHP, flo
 	
 }
 
-//»˙
+//Ìûê
 float UCharacterStateComponent::AddHeal(float Amount, FSkillClass DamageType, AActor* Instigate)
 {
 	if (Amount <= 0.f || CurHP <= 0.f)
@@ -57,7 +57,7 @@ float UCharacterStateComponent::AddHeal(float Amount, FSkillClass DamageType, AA
 
 }
 
-//MP »∏∫π
+//MP ÌöåÎ≥µ
 float UCharacterStateComponent::AddMP(float Amount, FSkillClass DamageType, AActor* Instigate)
 {
 	if (Amount <= 0.f || CurMP <= 0.f)
@@ -69,7 +69,7 @@ float UCharacterStateComponent::AddMP(float Amount, FSkillClass DamageType, AAct
 		return CurMP;
 }
 
-//MP ªÁøÎ
+//MP ÏÇ¨Ïö©
 float UCharacterStateComponent::UseMP(float Amount, FSkillClass DamageType, FCharacterState CharData)
 {
 	if (Amount <= 0.f || CurMP <= 0.f)
@@ -81,7 +81,7 @@ float UCharacterStateComponent::UseMP(float Amount, FSkillClass DamageType, FCha
 		return CurMP;
 }
 
-//Ω«µÂ √ﬂ∞°
+//Ïã§Îìú Ï∂îÍ∞Ä
 float UCharacterStateComponent::AddShield(float Amount, FSkillClass DamageType, AActor* Instigate)
 {
 	if (Amount <= 0.f)
@@ -104,20 +104,20 @@ void UCharacterStateComponent::InitCharacterData(FCharacterState CharData)
 	MaxShield = CharData.MaxStats.MaxShield;
 	CurShield = MaxShield;
 
-	UE_LOG(LogTemp, Log, TEXT("InitCharacterData -> HP: %.1f | MP: %.1f | Shield: %.1f"), MaxHP, MaxMP,MaxShield);
+	UE_LOG(LogTemp, Log, TEXT("InitCharacterData -> HP: %.1f | MP: %.1f | Shield: %.1f"), CurHP, CurMP, CurShield);
 }
 
-//ƒ≥∏Ø≈Õ ªÛ≈¬ º¬∆√
+//Ï∫êÎ¶≠ÌÑ∞ ÏÉÅÌÉú ÏÖãÌåÖ
 void UCharacterStateComponent::SetAdditionalState(FCharacterState AddState)
 {
 	AdditionalState = AddState;
 
-	// øπ: ¿Â∫Ò √ﬂ∞° Ω∫≈»¿ª π›øµ«œ∑¡∏È ø©±‚º≠ ∞ËªÍ
+	// Ïòà: Ïû•ÎπÑ Ï∂îÍ∞Ä Ïä§ÌÉØÏùÑ Î∞òÏòÅÌïòÎ†§Î©¥ Ïó¨Í∏∞ÏÑú Í≥ÑÏÇ∞
 	MaxHP = BaseState.MaxStats.MaxHP + AdditionalState.MaxStats.MaxHP;
 	MaxMP = BaseState.MaxStats.MaxMP + AdditionalState.MaxStats.MaxMP;
 	MaxShield = BaseState.MaxStats.MaxShield + AdditionalState.MaxStats.MaxShield;
 
-	// «ˆ¿Á HP,MP, Ω«µÂ¥¬ ±‚¡∏ ∞™ ¿Ø¡ˆ
+	// ÌòÑÏû¨ HP,MP, Ïã§ÎìúÎäî Í∏∞Ï°¥ Í∞í Ïú†ÏßÄ
 	UE_LOG(LogTemp, Log, TEXT("SetAdditionalState -> Total MaxHP: %.1f | MP: %.1f | MaxShield: %.1f"), MaxHP, MaxMP, MaxShield);
 }
 

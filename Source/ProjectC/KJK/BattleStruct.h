@@ -42,8 +42,7 @@ struct FStatMax : public FTableRowBase
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
-	FString CharacterName;
+
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Max")
 	float MaxHP;
@@ -56,9 +55,11 @@ public:
 };
 
 USTRUCT(BlueprintType)
-struct FCharacterState
+struct FCharacterState : public FTableRowBase
 {
 	GENERATED_BODY()
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	FString CharacterName;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
 	float CurHP;

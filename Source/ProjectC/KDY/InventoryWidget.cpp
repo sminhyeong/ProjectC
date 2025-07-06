@@ -4,6 +4,7 @@
 #include "InventoryWidget.h"
 #include "ItemStruct.h"
 #include "Components/TileView.h"
+#include "Components/TextBlock.h"
 #include "InventorySlotWidget.h"
 #include "Components/Image.h"
 
@@ -16,9 +17,15 @@ void UInventoryWidget::UpdateItemList(const TArray<FRPGItemData> ItemList)
 		UInventorySlotWidget* NewItemSlot = CreateWidget<UInventorySlotWidget>(this, InventorySlotWidgetClass);
 		if (NewItemSlot)
 		{
+			NewItemSlot->ItemData = item;
 			NewItemSlot->Image_Item->SetBrushFromTexture(item.ItemInfo.Texture);
-			// UE_LOG(LogTemp, Warning, TEXT("ItemTexture : %s"), *item.ItemInfo.Texture.GetName());
+			NewItemSlot->Text_ItemNumber->SetText(FText::AsNumber(item.Number));
 			TileView_Items->AddItem(NewItemSlot);
+			
 		}
+	}
+	if (ItemList.Num() > 0)
+	{
+		NowWatchCategory = ItemList[0].ItemInfo.Category;
 	}
 }

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
+#include "ItemStruct.h"
 #include "InventorySlotWidget.generated.h"
 
 class UButton;
@@ -30,6 +31,6 @@ public:
 
 public:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UTexture2D> ItemSlotImage;
+	FRPGItemData ItemData;
 
 };

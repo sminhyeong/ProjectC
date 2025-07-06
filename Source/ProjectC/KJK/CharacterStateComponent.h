@@ -62,6 +62,8 @@ public:
 
 	float AddShield(float Damage, FSkillClass DamageType, AActor* Instigate);
 
+
+
 	//캐릭터 스테이트
 	UFUNCTION(BlueprintCallable)
 
@@ -72,15 +74,15 @@ public:
 	void SetAdditionalState(FCharacterState AddState);
 		
 	//변수
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_CurHP, EditAnywhere, Category = "State")
 	float CurHP;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	UPROPERTY(BlueprintReadWrite,  EditAnywhere, Category = "State")
 	float MaxHP;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_CurShield, EditAnywhere, Category = "State")
 	float CurShield;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
 	float MaxShield;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_CurMP, EditAnywhere, Category = "State")
 	float CurMP;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
 	float MaxMP;
@@ -91,5 +93,14 @@ public:
 	FSkillClass Skill;
 
 
+	//rep함수
+	UFUNCTION()
+	void OnRep_CurHP();
+
+	UFUNCTION()
+	void OnRep_CurMP();
+
+	UFUNCTION()
+	void OnRep_CurShield();
 
 };

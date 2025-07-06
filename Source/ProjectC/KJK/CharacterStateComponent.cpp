@@ -2,6 +2,7 @@
 
 
 #include "CharacterStateComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values for this component's properties
 UCharacterStateComponent::UCharacterStateComponent()
@@ -10,6 +11,8 @@ UCharacterStateComponent::UCharacterStateComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+
+	SetIsReplicatedByDefault(true); 
 
 
 	// ...
@@ -121,7 +124,31 @@ void UCharacterStateComponent::SetAdditionalState(FCharacterState AddState)
 	UE_LOG(LogTemp, Log, TEXT("SetAdditionalState -> Total MaxHP: %.1f | MP: %.1f | MaxShield: %.1f"), MaxHP, MaxMP, MaxShield);
 }
 
+void UCharacterStateComponent::OnRep_CurHP()
+{
+	UE_LOG(LogTemp, Log, TEXT("CurHP changed to %.1f"), CurHP);
+}
 
+void UCharacterStateComponent::OnRep_CurMP()
+{
+	UE_LOG(LogTemp, Log, TEXT("CurHP changed to %.1f"), CurMP);
+}
+
+void UCharacterStateComponent::OnRep_CurShield()
+{
+	UE_LOG(LogTemp, Log, TEXT("CurShield changed to %.1f"), CurShield);
+
+}
+
+void UCharacterStateComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UCharacterStateComponent, CurHP);
+	DOREPLIFETIME(UCharacterStateComponent, CurMP);
+	DOREPLIFETIME(UCharacterStateComponent, CurShield);
+	// 다른 변수들도 필요하면 추가
+}
 // Called when the game starts
 void UCharacterStateComponent::BeginPlay()
 {

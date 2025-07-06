@@ -71,8 +71,8 @@ void ANetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
         TSharedRef<FInternetAddr> ServerAddress = SocketSubsystem->CreateInternetAddr();
 
         bool bIsValidIP = false;
-        ServerAddress->SetIp(*ServerIP, bIsValidIP);
         ServerAddress->SetPort(ServerPort);
+        ServerAddress->SetIp(*ServerIP, bIsValidIP);
 
         if (!bIsValidIP)
         {

@@ -965,51 +965,31 @@ bool ANetworkManager::CreateServerAddress(const FString& IP, int32 Port, TShared
         return false;
     }
 
-    // 방법 1: 최신 API 사용 (안정적)
+    // 방법 1: FIPv4Address + FIPv4Endpoint만 사용 (SetPort 완전 회피)
     FIPv4Address IPv4Address;
     if (FIPv4Address::Parse(IP, IPv4Address))
     {
-        FIPv4Endpoint ServerEndpoint(IPv4Address, Port);
+        FIPv4Endpoint ServerEndpoint(IPv4Address, static_cast<uint16>(Port));
         OutAddress = ServerEndpoint.ToInternetAddr();
-        UE_LOG(LogTemp, Log, TEXT("Address created using new API: %s:%d"), *IP, Port);
+        UE_LOG(LogTemp, Log, TEXT("Address created using IPv4Endpoint: %s:%d"), *IP, Port);
         return true;
     }
 
-    // 방법 2: 기존 API 사용하되 안전하게
-    OutAddress = SocketSubsystem->CreateInternetAddr();
-
-    // 포트 먼저 설정 (안전한 순서)
-    if (Port <= 0 || Port > 65535)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Invalid port range: %d"), Port);
-        return false;
-    }
-
-    OutAddress->SetPort(Port);
-
-    // IP 설정 시도 (여러 방법으로)
-    bool bIsValidIP = false;
-
-    // 시도 1: 직접 설정
-    OutAddress->SetIp(*IP, bIsValidIP);
-    if (bIsValidIP)
-    {
-        UE_LOG(LogTemp, Log, TEXT("Address created using legacy API (direct): %s:%d"), *IP, Port);
-        return true;
-    }
-
-    // 시도 2: 호스트 이름 해석
+    // 방법 2: localhost 특별 처리
     FString CleanIP = IP.TrimStartAndEnd();
     if (CleanIP.Equals(TEXT("localhost"), ESearchCase::IgnoreCase))
     {
-        OutAddress->SetIp(TEXT("127.0.0.1"), bIsValidIP);
-        if (bIsValidIP)
+        FIPv4Address LocalhostAddr;
+        if (FIPv4Address::Parse(TEXT("127.0.0.1"), LocalhostAddr))
         {
-            UE_LOG(LogTemp, Log, TEXT("Address created using localhost conversion: %s:%d"), *IP, Port);
+            FIPv4Endpoint LocalhostEndpoint(LocalhostAddr, static_cast<uint16>(Port));
+            OutAddress = LocalhostEndpoint.ToInternetAddr();
+            UE_LOG(LogTemp, Log, TEXT("Address created for localhost: %s:%d"), *IP, Port);
             return true;
         }
     }
 
+    // 실패 시
     UE_LOG(LogTemp, Error, TEXT("Failed to create address for: %s:%d"), *IP, Port);
     return false;
 }

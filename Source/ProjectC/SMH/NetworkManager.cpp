@@ -6,6 +6,7 @@
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "SocketTypes.h" 
 
 ANetworkManager::ANetworkManager()
 {
@@ -67,16 +68,26 @@ void ANetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
     if (CreateSocket())
     {
         // 서버 주소 생성
-        ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
-        TSharedRef<FInternetAddr> ServerAddress = SocketSubsystem->CreateInternetAddr();
+        //ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
+        //TSharedRef<FInternetAddr> ServerAddress = SocketSubsystem->CreateInternetAddr();
 
-        bool bIsValidIP = false;
-        ServerAddress->SetPort(ServerPort);
-        ServerAddress->SetIp(*ServerIP, bIsValidIP);
+        //bool bIsValidIP = false;
+        //ServerAddress->SetIp(*ServerIP, bIsValidIP);
+        //ServerAddress->SetPort(ServerPort);
 
-        if (!bIsValidIP)
+        //if (!bIsValidIP)
+        //{
+        //    UE_LOG(LogTemp, Error, TEXT("Invalid IP address: %s"), *ServerIP);
+        //    SetConnectionState(ENetConnectionState::Failed);
+        //    CleanupSocket();
+        //    return;
+        //}
+
+        TSharedRef<FInternetAddr> ServerAddress = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
+
+        if (!CreateServerAddress(ServerIP, ServerPort, ServerAddress))
         {
-            UE_LOG(LogTemp, Error, TEXT("Invalid IP address: %s"), *ServerIP);
+            UE_LOG(LogTemp, Error, TEXT("Failed to create server address: %s:%d"), *ServerIP, ServerPort);
             SetConnectionState(ENetConnectionState::Failed);
             CleanupSocket();
             return;
@@ -733,24 +744,47 @@ void ANetworkManager::TryReconnect()
 
     if (CreateSocket())
     {
-        // 서버 주소 생성
-        ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
-        TSharedRef<FInternetAddr> ServerAddress = SocketSubsystem->CreateInternetAddr();
+        //// 서버 주소 생성
+        //ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
+        //TSharedRef<FInternetAddr> ServerAddress = SocketSubsystem->CreateInternetAddr();
 
-        bool bIsValidIP = false;
-        ServerAddress->SetIp(*CurrentServerIP, bIsValidIP);
-        ServerAddress->SetPort(CurrentServerPort);
+        //bool bIsValidIP = false;
+        //ServerAddress->SetIp(*CurrentServerIP, bIsValidIP);
+        //ServerAddress->SetPort(CurrentServerPort);
 
-        if (bIsValidIP)
+        //if (bIsValidIP)
+        //{
+        //    // 서버에 연결 시도
+        //    bool bConnected = ClientSocket->Connect(*ServerAddress);
+
+        //    if (bConnected)
+        //    {
+        //        UE_LOG(LogTemp, Log, TEXT("Reconnection successful!"));
+        //        SetConnectionState(ENetConnectionState::Connected);
+        //        StopReconnectTimer(); // 연결 성공 시 타이머 중지
+        //    }
+        //    else
+        //    {
+        //        UE_LOG(LogTemp, Warning, TEXT("Reconnection failed, will try again..."));
+        //        CleanupSocket();
+        //    }
+        //}
+        //else
+        //{
+        //    UE_LOG(LogTemp, Error, TEXT("Invalid IP address during reconnection"));
+        //    CleanupSocket();
+        //}
+        TSharedRef<FInternetAddr> ServerAddress = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
+
+        if (CreateServerAddress(CurrentServerIP, CurrentServerPort, ServerAddress))
         {
-            // 서버에 연결 시도
             bool bConnected = ClientSocket->Connect(*ServerAddress);
 
             if (bConnected)
             {
                 UE_LOG(LogTemp, Log, TEXT("Reconnection successful!"));
                 SetConnectionState(ENetConnectionState::Connected);
-                StopReconnectTimer(); // 연결 성공 시 타이머 중지
+                StopReconnectTimer();
             }
             else
             {
@@ -760,7 +794,7 @@ void ANetworkManager::TryReconnect()
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("Invalid IP address during reconnection"));
+            UE_LOG(LogTemp, Error, TEXT("Failed to create server address during reconnection"));
             CleanupSocket();
         }
     }
@@ -920,4 +954,62 @@ bool ANetworkManager::ReceivePacketData(TArray<uint8>& OutPacketData, float Time
 
     UE_LOG(LogTemp, Log, TEXT("Successfully received complete packet: %d bytes"), PacketSize);
     return true;
+}
+
+bool ANetworkManager::CreateServerAddress(const FString& IP, int32 Port, TSharedRef<FInternetAddr>& OutAddress)
+{
+    ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
+    if (!SocketSubsystem)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to get socket subsystem"));
+        return false;
+    }
+
+    // 방법 1: 최신 API 사용 (안정적)
+    FIPv4Address IPv4Address;
+    if (FIPv4Address::Parse(IP, IPv4Address))
+    {
+        FIPv4Endpoint ServerEndpoint(IPv4Address, Port);
+        OutAddress = ServerEndpoint.ToInternetAddr();
+        UE_LOG(LogTemp, Log, TEXT("Address created using new API: %s:%d"), *IP, Port);
+        return true;
+    }
+
+    // 방법 2: 기존 API 사용하되 안전하게
+    OutAddress = SocketSubsystem->CreateInternetAddr();
+
+    // 포트 먼저 설정 (안전한 순서)
+    if (Port <= 0 || Port > 65535)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Invalid port range: %d"), Port);
+        return false;
+    }
+
+    OutAddress->SetPort(static_cast<uint16>(Port));
+
+    // IP 설정 시도 (여러 방법으로)
+    bool bIsValidIP = false;
+
+    // 시도 1: 직접 설정
+    OutAddress->SetIp(*IP, bIsValidIP);
+    if (bIsValidIP)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Address created using legacy API (direct): %s:%d"), *IP, Port);
+        return true;
+    }
+
+    // 시도 2: 호스트 이름 해석
+    FString CleanIP = IP.TrimStartAndEnd();
+    if (CleanIP.Equals(TEXT("localhost"), ESearchCase::IgnoreCase))
+    {
+        OutAddress->SetIp(TEXT("127.0.0.1"), bIsValidIP);
+        if (bIsValidIP)
+        {
+            UE_LOG(LogTemp, Log, TEXT("Address created using localhost conversion: %s:%d"), *IP, Port);
+            return true;
+        }
+    }
+
+    UE_LOG(LogTemp, Error, TEXT("Failed to create address for: %s:%d"), *IP, Port);
+    return false;
 }

@@ -137,6 +137,8 @@ private:
     bool SendPacketData(const TArray<uint8>& PacketData);
     bool ReceivePacketData(TArray<uint8>& OutPacketData, float TimeoutSeconds);
 
+
+    bool CreateServerAddress(const FString& IP, int32 Port, TSharedRef<FInternetAddr>& OutAddress);
     // TODO: 추후 구현할 기능들
     // - 회원가입 기능
     // - 게임 서버 생성/리스트 불러오기

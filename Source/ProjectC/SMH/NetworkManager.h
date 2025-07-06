@@ -59,9 +59,37 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Network")
     bool LogoutFromServer(int32 UserID, FString& OutMessage);
 
+    UFUNCTION(BlueprintCallable, Category = "Network")
+    bool CreateAccountToServer(const FString& Username, const FString& Password, const FString& Nickname, int32& OutUserID, FString& OutMessage);
+    
     // 델리게이트
     UPROPERTY(BlueprintAssignable, Category = "Network")
     FOnConnectionStateChanged OnConnectionStateChanged;
+
+    UFUNCTION(BlueprintCallable, Category = "Network")
+    bool CreateGameServer(int32 UserID, const FString& ServerName, const FString& ServerPassword, const FString& ServerIP, int32 ServerPort, int32 MaxPlayers, int32& OutServerID, FString& OutMessage);
+
+    UFUNCTION(BlueprintCallable, Category = "Network")
+    bool GetGameServerList(TArray<struct FAccountGameServerInfo>& OutServerList);
+
+    UFUNCTION(BlueprintCallable, Category = "Network")
+    bool JoinGameServer(int32 UserID, int32 ServerID, const FString& ServerPassword, FString& OutServerIP, int32& OutServerPort, FString& OutMessage);
+
+    //플레이어 데이터 조회
+    UFUNCTION(BlueprintCallable, Category = "Network|Player Data")
+    bool GetPlayerData(int32 UserID, struct FAccountPlayerData& OutPlayerData, FString& OutMessage);
+
+    //플레이어 인벤토리 조회
+    UFUNCTION(BlueprintCallable, Category = "Network|Inventory")
+    bool GetPlayerInventory(int32 UserID, TArray<struct FAccountItemInfo>& OutInventoryItems, FString& OutMessage);
+
+    //Store whghl
+    UFUNCTION(BlueprintCallable, Category = "Network|Shop")
+    bool GetStoreItemList(int32 ShopID, TArray<struct FAccountItemInfo>& OutShopItems, FString& OutMessage);
+
+    //단일 아이템 정보 조회
+    UFUNCTION(BlueprintCallable, Category = "Network|Item")
+    bool GetSingleItemInfo(int32 UserID, int32 ItemID, FAccountItemInfo& OutItemInfo, FString& OutMessage);
 
 protected:
     // 서버 정보

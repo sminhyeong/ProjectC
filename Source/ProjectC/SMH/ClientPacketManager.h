@@ -185,7 +185,7 @@ public:
     // 게임 서버 접속 요청
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     TArray<uint8> CreateJoinGameServerRequest(int32 UserID, int32 ServerID, const FString& ServerPassword);
-
+    
     // 게임 서버 종료 요청
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     TArray<uint8> CreateCloseGameServerRequest(int32 UserID, int32 ServerID);
@@ -193,6 +193,10 @@ public:
     // 플레이어 데이터 저장 요청
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     TArray<uint8> CreateSavePlayerDataRequest(int32 UserID, int32 Level, int32 Experience, int32 Health, int32 Mana, int32 Gold, float PosX, float PosY);
+
+    //상점 데이터 불러오기
+    UFUNCTION(BlueprintCallable, Category = "Packet Manager|Shop")
+    TArray<uint8> CreateStoreItemsRequest(int32 ShopID);
 
     // === 서버 응답 패킷 파싱 (S2C) ===
 
@@ -236,6 +240,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     bool ParseSavePlayerDataResponse(const TArray<uint8>& Data, FString& OutMessage, bool& bOutSuccess);
 
+    //상점 데이터 저장 응답 파싱
+    UFUNCTION(BlueprintCallable, Category = "Packet Manager|Shop")
+    bool ParseStoreItemsResponse(const TArray<uint8>& Data, TArray<FAccountItemInfo>& OutShopItems);
     // === 유틸리티 함수들 ===
 
     // 패킷 유효성 검사

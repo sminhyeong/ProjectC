@@ -3,6 +3,12 @@
 #include "ClientPacketManager.h"
 #include "../UserEvent_generated.h"
 
+#if PLATFORM_WINDOWS
+#define NOMINMAX  // min, max 매크로 충돌 방지
+#include <windows.h>
+#undef NOMINMAX
+#endif
+
 UClientPacketManager::UClientPacketManager()
 {
     ClearError();
@@ -43,11 +49,77 @@ FString UClientPacketManager::ConvertToFString(const flatbuffers::String* FBStri
     {
         return FString();
     }
-    return FString(UTF8_TO_TCHAR(FBString->c_str()));
+
+    const char* rawString = FBString->c_str();
+    int32 stringLength = FBString->size();
+
+    if (stringLength == 0)
+    {
+        return FString();
+    }
+
+#if PLATFORM_WINDOWS
+    // EUC-KR → UTF-16 변환
+    int WideLength = MultiByteToWideChar(949, 0, rawString, stringLength, nullptr, 0);
+    if (WideLength > 0)
+    {
+        TArray<WCHAR> WideBuffer;
+        WideBuffer.SetNum(WideLength + 1);
+        WideBuffer[WideLength] = 0;
+
+        int ConvertedLength = MultiByteToWideChar(949, 0, rawString, stringLength,
+            WideBuffer.GetData(), WideLength);
+
+        if (ConvertedLength > 0)
+        {
+            FString Result = FString(WideBuffer.GetData());
+            UE_LOG(LogTemp, Verbose, TEXT("[ConvertToFString] EUC-KR conversion success: %s"), *Result);
+            return Result;
+        }
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[ConvertToFString] EUC-KR conversion failed, using UTF-8 fallback"));
+#endif
+
+    // EUC-KR 변환 실패 시 UTF-8로 시도
+    return FString(UTF8_TO_TCHAR(rawString));
 }
 
 std::string UClientPacketManager::ConvertToStdString(const FString& UEString) const
 {
+#if PLATFORM_WINDOWS
+    if (UEString.IsEmpty())
+    {
+        return std::string();
+    }
+
+    // FString(UTF-16) → EUC-KR 변환
+    const TCHAR* SourceString = *UEString;
+    int SourceLength = UEString.Len();
+
+    // 필요한 버퍼 크기 계산
+    int RequiredSize = WideCharToMultiByte(949, 0,
+        reinterpret_cast<const wchar_t*>(SourceString), SourceLength,
+        nullptr, 0, nullptr, nullptr);
+
+    if (RequiredSize > 0)
+    {
+        std::string EucKrString(RequiredSize, 0);
+        int ConvertedLength = WideCharToMultiByte(949, 0,
+            reinterpret_cast<const wchar_t*>(SourceString), SourceLength,
+            &EucKrString[0], RequiredSize, nullptr, nullptr);
+
+        if (ConvertedLength > 0)
+        {
+            UE_LOG(LogTemp, Verbose, TEXT("[ConvertToStdString] EUC-KR conversion success: %s"), *UEString);
+            return EucKrString;
+        }
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("[ConvertToStdString] EUC-KR conversion failed, using UTF-8 fallback"));
+#endif
+
+    // 실패 시 또는 non-Windows 플랫폼에서는 UTF-8 사용
     return std::string(TCHAR_TO_UTF8(*UEString));
 }
 
@@ -381,6 +453,30 @@ TArray<uint8> UClientPacketManager::CreateSavePlayerDataRequest(int32 UserID, in
     catch (const std::exception& e)
     {
         SetError(FString::Printf(TEXT("CreateSavePlayerDataRequest failed: %s"), UTF8_TO_TCHAR(e.what())));
+        return TArray<uint8>();
+    }
+}
+
+TArray<uint8> UClientPacketManager::CreateStoreItemsRequest(int32 ShopID)
+{
+    ClearError();
+    try
+    {
+        flatbuffers::FlatBufferBuilder builder;
+        auto shopItemsRequest = CreateC2S_ShopItems(builder, static_cast<uint32_t>(ShopID));
+        auto packet = CreateDatabasePacket(builder, EventType_C2S_ShopItems, shopItemsRequest.Union());
+        builder.Finish(packet);
+
+        TArray<uint8> PacketData;
+        uint8* bufferPointer = builder.GetBufferPointer();
+        int32 bufferSize = static_cast<int32>(builder.GetSize());
+        PacketData.Append(bufferPointer, bufferSize);
+
+        return PacketData;
+    }
+    catch (const std::exception& e)
+    {
+        SetError(FString::Printf(TEXT("CreateShopItemsRequest failed: %s"), UTF8_TO_TCHAR(e.what())));
         return TArray<uint8>();
     }
 }
@@ -767,6 +863,60 @@ bool UClientPacketManager::ParseSavePlayerDataResponse(const TArray<uint8>& Data
 
     UE_LOG(LogTemp, Log, TEXT("[ClientPacketManager] ParseSavePlayerDataResponse: Success=%s, Message=%s"),
         bOutSuccess ? TEXT("true") : TEXT("false"), *OutMessage);
+
+    return true;
+}
+
+bool UClientPacketManager::ParseStoreItemsResponse(const TArray<uint8>& Data, TArray<FAccountItemInfo>& OutShopItems)
+{
+    if (!VerifyPacket(Data.GetData(), Data.Num()))
+        return false;
+
+    const DatabasePacket* packet = GetDatabasePacket(Data.GetData());
+    if (!packet || packet->packet_event_type() != EventType_S2C_ShopItems)
+    {
+        SetError(TEXT("Invalid shop items response packet"));
+        return false;
+    }
+
+    const S2C_ShopItems* shopItemsResponse = packet->packet_event_as_S2C_ShopItems();
+    if (!shopItemsResponse)
+    {
+        SetError(TEXT("Failed to cast shop items response"));
+        return false;
+    }
+
+    if (shopItemsResponse->result() != ResultCode_SUCCESS)
+    {
+        SetError(TEXT("Shop items request failed"));
+        return false;
+    }
+
+    // 상점 아이템 파싱
+    OutShopItems.Empty();
+    if (shopItemsResponse->items())
+    {
+        for (uint32 i = 0; i < shopItemsResponse->items()->size(); ++i)
+        {
+            const ItemData* itemData = shopItemsResponse->items()->Get(i);
+            if (itemData)
+            {
+                FAccountItemInfo itemInfo;
+                itemInfo.ItemID = static_cast<int32>(itemData->item_id());
+                itemInfo.ItemName = ConvertToFString(itemData->item_name());
+                itemInfo.ItemType = static_cast<int32>(itemData->item_type());
+                itemInfo.Quantity = 1; // 상점 아이템은 1개로 설정
+                itemInfo.BasePrice = static_cast<int32>(itemData->base_price());
+                itemInfo.AttackBonus = static_cast<int32>(itemData->attack_bonus());
+                itemInfo.DefenseBonus = static_cast<int32>(itemData->defense_bonus());
+                itemInfo.HPBonus = static_cast<int32>(itemData->hp_bonus());
+                itemInfo.MPBonus = static_cast<int32>(itemData->mp_bonus());
+                itemInfo.Description = ConvertToFString(itemData->description());
+
+                OutShopItems.Add(itemInfo);
+            }
+        }
+    }
 
     return true;
 }

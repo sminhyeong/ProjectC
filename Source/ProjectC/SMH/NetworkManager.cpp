@@ -1,4 +1,4 @@
-#include "NetworkManager.h"
+ï»¿#include "NetworkManager.h"
 #include "ClientPacketManager.h"
 #include "SocketSubsystem.h"
 #include "Common/TcpSocketBuilder.h"
@@ -9,32 +9,29 @@
 
 ANetworkManager::ANetworkManager()
 {
-    // Tick ºñÈ°¼ºÈ­ - ´õ ÀÌ»ó ÇÊ¿ä ¾øÀ½
+    // Tick ë¹„í™œì„±í™” - ë” ì´ìƒ í•„ìš” ì—†ìŒ
     PrimaryActorTick.bCanEverTick = false;
 
-    // ±âº»°ª ¼³Á¤
+    // ê¸°ë³¸ê°’ ì„¤ì •
     DefaultServerIP = TEXT("127.0.0.1");
     DefaultServerPort = 8080;
-    ReconnectInterval = 0.1f; // 0.1ÃÊ¸¶´Ù Àç¿¬°á ½Ãµµ
-    PacketTimeout = 5.0f; // 5ÃÊ ÆĞÅ¶ ÀÀ´ä ´ë±â
+    ReconnectInterval = 0.1f; // 0.1ì´ˆë§ˆë‹¤ ì¬ì—°ê²° ì‹œë„
+    PacketTimeout = 5.0f; // 5ì´ˆ íŒ¨í‚· ì‘ë‹µ ëŒ€ê¸°
 
-    // ÃÊ±â »óÅÂ
+    // ì´ˆê¸° ìƒíƒœ
     ClientSocket = nullptr;
     ConnectionState = ENetConnectionState::Disconnected;
     CurrentServerIP = TEXT("");
     CurrentServerPort = 0;
-
-    // ClientPacketManager »ı¼º
+    // ClientPacketManager ìƒì„±
     ClientPacketManager = CreateDefaultSubobject<UClientPacketManager>(TEXT("ClientPacketManager"));
-
-    // ¼ö½Å ¹öÆÛ ÃÊ±âÈ­
+    // ìˆ˜ì‹  ë²„í¼ ì´ˆê¸°í™”
     ReceiveBuffer.Reserve(RECEIVE_BUFFER_SIZE);
 }
 
 void ANetworkManager::BeginPlay()
 {
     Super::BeginPlay();
-
     UE_LOG(LogTemp, Log, TEXT("NetworkManager BeginPlay"));
 }
 
@@ -56,7 +53,7 @@ void ANetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
 {
     UE_LOG(LogTemp, Log, TEXT("Attempting to connect to server: %s:%d"), *ServerIP, ServerPort);
 
-    // ÀÌ¹Ì ¿¬°áµÇ¾î ÀÖÀ¸¸é ±âÁ¸ ¿¬°á ÇØÁ¦
+    // ì´ë¯¸ ì—°ê²°ë˜ì–´ ìˆìœ¼ë©´ ê¸°ì¡´ ì—°ê²° í•´ì œ
     if (ClientSocket)
     {
         DisconnectFromServer();
@@ -69,7 +66,7 @@ void ANetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
 
     if (CreateSocket())
     {
-        // ¼­¹ö ÁÖ¼Ò »ı¼º
+        // ì„œë²„ ì£¼ì†Œ ìƒì„±
         ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
         TSharedRef<FInternetAddr> ServerAddress = SocketSubsystem->CreateInternetAddr();
 
@@ -85,20 +82,20 @@ void ANetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
             return;
         }
 
-        // ¼­¹ö¿¡ ¿¬°á ½Ãµµ
+        // ì„œë²„ì— ì—°ê²° ì‹œë„
         bool bConnected = ClientSocket->Connect(*ServerAddress);
 
         if (bConnected)
         {
             UE_LOG(LogTemp, Log, TEXT("Successfully connected to server: %s:%d"), *ServerIP, ServerPort);
             SetConnectionState(ENetConnectionState::Connected);
-            StopReconnectTimer(); // ¿¬°á ¼º°ø ½Ã Àç¿¬°á Å¸ÀÌ¸Ó ÁßÁö
+            StopReconnectTimer(); // ì—°ê²° ì„±ê³µ ì‹œ ì¬ì—°ê²° íƒ€ì´ë¨¸ ì¤‘ì§€
         }
         else
         {
             UE_LOG(LogTemp, Warning, TEXT("Failed to connect to server: %s:%d - Starting reconnect timer"), *ServerIP, ServerPort);
             SetConnectionState(ENetConnectionState::Reconnecting);
-            StartReconnectTimer(); // Àç¿¬°á Å¸ÀÌ¸Ó ½ÃÀÛ
+            StartReconnectTimer(); // ì¬ì—°ê²° íƒ€ì´ë¨¸ ì‹œì‘
         }
     }
     else
@@ -131,7 +128,7 @@ ENetConnectionState ANetworkManager::GetConnectionState() const
 
 bool ANetworkManager::LoginToServer(const FString& Username, const FString& Password, FAccountLoginResponse& OutResponse)
 {
-    // OutResponse ÃÊ±âÈ­
+    // OutResponse ì´ˆê¸°í™”
     OutResponse = FAccountLoginResponse();
 
     if (!IsConnectedToServer())
@@ -152,7 +149,7 @@ bool ANetworkManager::LoginToServer(const FString& Username, const FString& Pass
 
     UE_LOG(LogTemp, Log, TEXT("Attempting login: %s"), *Username);
 
-    // ClientPacketManager¸¦ »ç¿ëÇØ¼­ ·Î±×ÀÎ ÆĞÅ¶ »ı¼º
+    // ClientPacketManagerë¥¼ ì‚¬ìš©í•´ì„œ ë¡œê·¸ì¸ íŒ¨í‚· ìƒì„±
     TArray<uint8> LoginPacket = ClientPacketManager->CreateLoginRequest(Username, Password);
     if (LoginPacket.Num() == 0)
     {
@@ -170,7 +167,7 @@ bool ANetworkManager::LoginToServer(const FString& Username, const FString& Pass
         return false;
     }
 
-    // ¼­¹ö ÀÀ´ä ´ë±â
+    // ì„œë²„ ì‘ë‹µ ëŒ€ê¸°
     TArray<uint8> ResponseData;
     if (!ReceivePacketData(ResponseData, PacketTimeout))
     {
@@ -180,7 +177,7 @@ bool ANetworkManager::LoginToServer(const FString& Username, const FString& Pass
         return false;
     }
 
-    // ClientPacketManager¸¦ »ç¿ëÇØ¼­ ÀÀ´ä ÆÄ½Ì
+    // ClientPacketManagerë¥¼ ì‚¬ìš©í•´ì„œ ì‘ë‹µ íŒŒì‹±
     if (!ClientPacketManager->ParseLoginResponse(ResponseData, OutResponse))
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to parse login response: %s"), *ClientPacketManager->GetLastError());
@@ -189,7 +186,7 @@ bool ANetworkManager::LoginToServer(const FString& Username, const FString& Pass
         return false;
     }
 
-    // ·Î±×ÀÎ °á°ú ·Î±× Ãâ·Â
+    // ë¡œê·¸ì¸ ê²°ê³¼ ë¡œê·¸ ì¶œë ¥
     if (OutResponse.bSuccess)
     {
         UE_LOG(LogTemp, Log, TEXT("Login Success - UserID: %d, Username: %s, Nickname: %s, Level: %d"),
@@ -200,9 +197,9 @@ bool ANetworkManager::LoginToServer(const FString& Username, const FString& Pass
         UE_LOG(LogTemp, Warning, TEXT("Login Failed - Message: %s"), *OutResponse.Message);
     }
 
-    // ¼º°ø/½ÇÆĞ¿Í °ü°è¾øÀÌ OutResponse¿¡ ¸ğµç Á¤º¸°¡ ´ã°ÜÀÖÀ¸¹Ç·Î true ¹İÈ¯
-    // ½ÇÁ¦ ¼º°ø ¿©ºÎ´Â OutResponse.bSuccess·Î È®ÀÎ
-    return true;
+    // ì„±ê³µ/ì‹¤íŒ¨ì™€ ê´€ê³„ì—†ì´ OutResponseì— ëª¨ë“  ì •ë³´ê°€ ë‹´ê²¨ìˆìœ¼ë¯€ë¡œ true ë°˜í™˜
+    // ì‹¤ì œ ì„±ê³µ ì—¬ë¶€ëŠ” OutResponse.bSuccessë¡œ í™•ì¸
+    return OutResponse.bSuccess;
 }
 
 bool ANetworkManager::LogoutFromServer(int32 UserID, FString& OutMessage)
@@ -221,7 +218,7 @@ bool ANetworkManager::LogoutFromServer(int32 UserID, FString& OutMessage)
 
     UE_LOG(LogTemp, Log, TEXT("Attempting logout for UserID: %d"), UserID);
 
-    // ClientPacketManager¸¦ »ç¿ëÇØ¼­ ·Î±×¾Æ¿ô ÆĞÅ¶ »ı¼º
+    // ClientPacketManagerë¥¼ ì‚¬ìš©í•´ì„œ ë¡œê·¸ì•„ì›ƒ íŒ¨í‚· ìƒì„±
     TArray<uint8> LogoutPacket = ClientPacketManager->CreateLogoutRequest(UserID);
     if (LogoutPacket.Num() == 0)
     {
@@ -235,7 +232,7 @@ bool ANetworkManager::LogoutFromServer(int32 UserID, FString& OutMessage)
         return false;
     }
 
-    // ¼­¹ö ÀÀ´ä ´ë±â
+    // ì„œë²„ ì‘ë‹µ ëŒ€ê¸°
     TArray<uint8> ResponseData;
     if (!ReceivePacketData(ResponseData, PacketTimeout))
     {
@@ -243,7 +240,7 @@ bool ANetworkManager::LogoutFromServer(int32 UserID, FString& OutMessage)
         return false;
     }
 
-    // ClientPacketManager¸¦ »ç¿ëÇØ¼­ ÀÀ´ä ÆÄ½Ì
+    // ClientPacketManagerë¥¼ ì‚¬ìš©í•´ì„œ ì‘ë‹µ íŒŒì‹±
     if (!ClientPacketManager->ParseLogoutResponse(ResponseData, OutMessage))
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to parse logout response: %s"), *ClientPacketManager->GetLastError());
@@ -252,6 +249,438 @@ bool ANetworkManager::LogoutFromServer(int32 UserID, FString& OutMessage)
 
     UE_LOG(LogTemp, Log, TEXT("Logout result: %s"), *OutMessage);
     return true;
+}
+
+bool ANetworkManager::CreateAccountToServer(const FString& Username, const FString& Password, const FString& Nickname, int32& OutUserID, FString& OutMessage)
+{
+    // ì´ˆê¸°í™”
+    OutUserID = 0;
+    OutMessage = TEXT("");
+
+    if (!IsConnectedToServer())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Not connected to server"));
+        OutMessage = TEXT("Not connected to server");
+        return false;
+    }
+
+    if (!ClientPacketManager)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ClientPacketManager is null"));
+        OutMessage = TEXT("ClientPacketManager is null");
+        return false;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Attempting create account: %s (Nickname: %s)"), *Username, *Nickname);
+
+    // ClientPacketManagerë¥¼ ì‚¬ìš©í•´ì„œ íšŒì›ê°€ì… íŒ¨í‚· ìƒì„±
+    TArray<uint8> CreateAccountPacket = ClientPacketManager->CreateAccountRequest(Username, Password, Nickname);
+    if (CreateAccountPacket.Num() == 0)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to create account packet: %s"), *ClientPacketManager->GetLastError());
+        OutMessage = FString::Printf(TEXT("Failed to create account packet: %s"), *ClientPacketManager->GetLastError());
+        return false;
+    }
+
+    if (!SendPacketData(CreateAccountPacket))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to send create account packet"));
+        OutMessage = TEXT("Failed to send create account packet");
+        return false;
+    }
+
+    // ì„œë²„ ì‘ë‹µ ëŒ€ê¸°
+    TArray<uint8> ResponseData;
+    if (!ReceivePacketData(ResponseData, PacketTimeout))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Create account response timeout"));
+        OutMessage = TEXT("Create account response timeout");
+        return false;
+    }
+
+    bool bSuccess = false;
+    if (!ClientPacketManager->ParseCreateAccountResponse(ResponseData, OutUserID, OutMessage, bSuccess))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to parse create account response: %s"), *ClientPacketManager->GetLastError());
+        OutMessage = FString::Printf(TEXT("Failed to parse create account response: %s"), *ClientPacketManager->GetLastError());
+        return false;
+    }
+
+    // íšŒì›ê°€ì… ê²°ê³¼ ë¡œê·¸ ì¶œë ¥
+    if (bSuccess)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Create Account Success - UserID: %d, Username: %s, Message: %s"),
+            OutUserID, *Username, *OutMessage);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Create Account Failed - Message: %s"), *OutMessage);
+        OutUserID = 0; // ì‹¤íŒ¨ ì‹œ UserIDë¥¼ 0ìœ¼ë¡œ ì„¤ì •
+    }
+    return bSuccess;
+}
+
+bool ANetworkManager::CreateGameServer(int32 UserID, const FString& ServerName, const FString& ServerPassword, const FString& ServerIP, int32 ServerPort, int32 MaxPlayers, int32& OutServerID, FString& OutMessage)
+{
+    // ì´ˆê¸°í™”
+    OutServerID = 0;
+    OutMessage = TEXT("");
+
+    if (!IsConnectedToServer())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Not connected to server"));
+        OutMessage = TEXT("Not connected to server");
+        return false;
+    }
+
+    if (!ClientPacketManager)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ClientPacketManager is null"));
+        OutMessage = TEXT("ClientPacketManager is null");
+        return false;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Attempting create game server: %s"), *ServerName);
+
+    // ClientPacketManagerë¥¼ ì‚¬ìš©í•´ì„œ ê²Œì„ ì„œë²„ ìƒì„± íŒ¨í‚· ìƒì„±
+    TArray<uint8> CreateServerPacket = ClientPacketManager->CreateGameServerRequest(UserID, ServerName, ServerPassword, ServerIP, ServerPort, MaxPlayers);
+    if (CreateServerPacket.Num() == 0)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to create game server packet: %s"), *ClientPacketManager->GetLastError());
+        OutMessage = FString::Printf(TEXT("Failed to create game server packet: %s"), *ClientPacketManager->GetLastError());
+        return false;
+    }
+
+    if (!SendPacketData(CreateServerPacket))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to send create game server packet"));
+        OutMessage = TEXT("Failed to send create game server packet");
+        return false;
+    }
+
+    // ì„œë²„ ì‘ë‹µ ëŒ€ê¸°
+    TArray<uint8> ResponseData;
+    if (!ReceivePacketData(ResponseData, PacketTimeout))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Create game server response timeout"));
+        OutMessage = TEXT("Create game server response timeout");
+        return false;
+    }
+
+    // ClientPacketManagerë¥¼ ì‚¬ìš©í•´ì„œ ì‘ë‹µ íŒŒì‹±
+    bool bSuccess = false;
+    if (!ClientPacketManager->ParseCreateGameServerResponse(ResponseData, OutServerID, OutMessage, bSuccess))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to parse create game server response: %s"), *ClientPacketManager->GetLastError());
+        OutMessage = FString::Printf(TEXT("Failed to parse create game server response: %s"), *ClientPacketManager->GetLastError());
+        return false;
+    }
+
+    // ê²Œì„ ì„œë²„ ìƒì„± ê²°ê³¼ ë¡œê·¸ ì¶œë ¥
+    if (bSuccess)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Create Game Server Success - ServerID: %d, Name: %s"), OutServerID, *ServerName);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Create Game Server Failed - Message: %s"), *OutMessage);
+        OutServerID = 0;
+    }
+
+    return bSuccess;
+}
+
+bool ANetworkManager::GetGameServerList(TArray<FAccountGameServerInfo>& OutServerList)
+{
+    // ì´ˆê¸°í™”
+    OutServerList.Empty();
+
+    if (!IsConnectedToServer())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Not connected to server"));
+        return false;
+    }
+
+    if (!ClientPacketManager)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ClientPacketManager is null"));
+        return false;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Requesting game server list"));
+
+    // ClientPacketManagerë¥¼ ì‚¬ìš©í•´ì„œ ê²Œì„ ì„œë²„ ë¦¬ìŠ¤íŠ¸ ìš”ì²­ íŒ¨í‚· ìƒì„± (RequestType = 0)
+    TArray<uint8> ServerListPacket = ClientPacketManager->CreateGameServerListRequest(0);
+    if (ServerListPacket.Num() == 0)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to create game server list packet: %s"), *ClientPacketManager->GetLastError());
+        return false;
+    }
+
+    if (!SendPacketData(ServerListPacket))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to send game server list packet"));
+        return false;
+    }
+
+    // ì„œë²„ ì‘ë‹µ ëŒ€ê¸°
+    TArray<uint8> ResponseData;
+    if (!ReceivePacketData(ResponseData, PacketTimeout))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Game server list response timeout"));
+        return false;
+    }
+
+    // ClientPacketManagerë¥¼ ì‚¬ìš©í•´ì„œ ì‘ë‹µ íŒŒì‹±
+    if (!ClientPacketManager->ParseGameServerListResponse(ResponseData, OutServerList))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to parse game server list response: %s"), *ClientPacketManager->GetLastError());
+        return false;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Game server list received: %d servers"), OutServerList.Num());
+    return true;
+}
+
+bool ANetworkManager::JoinGameServer(int32 UserID, int32 ServerID, const FString& ServerPassword, FString& OutServerIP, int32& OutServerPort, FString& OutMessage)
+{
+    // ì´ˆê¸°í™”
+    OutServerIP = TEXT("");
+    OutServerPort = 0;
+    OutMessage = TEXT("");
+
+    if (!IsConnectedToServer())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Not connected to server"));
+        OutMessage = TEXT("Not connected to server");
+        return false;
+    }
+
+    if (!ClientPacketManager)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ClientPacketManager is null"));
+        OutMessage = TEXT("ClientPacketManager is null");
+        return false;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Attempting join game server: ServerID %d"), ServerID);
+
+    // ClientPacketManagerë¥¼ ì‚¬ìš©í•´ì„œ ê²Œì„ ì„œë²„ ì ‘ì† íŒ¨í‚· ìƒì„±
+    TArray<uint8> JoinServerPacket = ClientPacketManager->CreateJoinGameServerRequest(UserID, ServerID, ServerPassword);
+    if (JoinServerPacket.Num() == 0)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to create join game server packet: %s"), *ClientPacketManager->GetLastError());
+        OutMessage = FString::Printf(TEXT("Failed to create join game server packet: %s"), *ClientPacketManager->GetLastError());
+        return false;
+    }
+
+    if (!SendPacketData(JoinServerPacket))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to send join game server packet"));
+        OutMessage = TEXT("Failed to send join game server packet");
+        return false;
+    }
+
+    // ì„œë²„ ì‘ë‹µ ëŒ€ê¸°
+    TArray<uint8> ResponseData;
+    if (!ReceivePacketData(ResponseData, PacketTimeout))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Join game server response timeout"));
+        OutMessage = TEXT("Join game server response timeout");
+        return false;
+    }
+
+    // ClientPacketManagerë¥¼ ì‚¬ìš©í•´ì„œ ì‘ë‹µ íŒŒì‹±
+    bool bSuccess = false;
+    if (!ClientPacketManager->ParseJoinGameServerResponse(ResponseData, OutServerIP, OutServerPort, OutMessage, bSuccess))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to parse join game server response: %s"), *ClientPacketManager->GetLastError());
+        OutMessage = FString::Printf(TEXT("Failed to parse join game server response: %s"), *ClientPacketManager->GetLastError());
+        return false;
+    }
+
+    // ê²Œì„ ì„œë²„ ì ‘ì† ê²°ê³¼ ë¡œê·¸ ì¶œë ¥
+    if (bSuccess)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Join Game Server Success - IP: %s, Port: %d"), *OutServerIP, OutServerPort);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Join Game Server Failed - Message: %s"), *OutMessage);
+        OutServerIP = TEXT("");
+        OutServerPort = 0;
+    }
+
+    return bSuccess;
+}
+
+bool ANetworkManager::GetPlayerData(int32 UserID, FAccountPlayerData& OutPlayerData, FString& OutMessage)
+{
+    OutPlayerData = FAccountPlayerData();
+    OutMessage = TEXT("");
+
+    if (!IsConnectedToServer() || !ClientPacketManager)
+    {
+        OutMessage = TEXT("ì„œë²„ ì—°ê²° ë˜ëŠ” PacketManager ì˜¤ë¥˜");
+        return false;
+    }
+
+    // í”Œë ˆì´ì–´ ë°ì´í„° ìš”ì²­ (RequestType = 0: ì¡°íšŒ)
+    TArray<uint8> Packet = ClientPacketManager->CreatePlayerDataRequest(UserID);
+    if (Packet.Num() == 0 || !SendPacketData(Packet))
+    {
+        OutMessage = TEXT("í”Œë ˆì´ì–´ ë°ì´í„° ìš”ì²­ ì‹¤íŒ¨");
+        return false;
+    }
+
+    // ì‘ë‹µ ìˆ˜ì‹ 
+    TArray<uint8> ResponseData;
+    if (!ReceivePacketData(ResponseData, PacketTimeout))
+    {
+        OutMessage = TEXT("í”Œë ˆì´ì–´ ë°ì´í„° ì‘ë‹µ ì‹œê°„ ì´ˆê³¼");
+        return false;
+    }
+
+    // ì‘ë‹µ íŒŒì‹±
+    if (!ClientPacketManager->ParsePlayerDataResponse(ResponseData, OutPlayerData))
+    {
+        OutMessage = TEXT("í”Œë ˆì´ì–´ ë°ì´í„° íŒŒì‹± ì‹¤íŒ¨");
+        return false;
+    }
+
+    OutMessage = TEXT("í”Œë ˆì´ì–´ ë°ì´í„° ì¡°íšŒ ì„±ê³µ");
+    return true;
+}
+
+bool ANetworkManager::GetPlayerInventory(int32 UserID, TArray<FAccountItemInfo>& OutInventoryItems, FString& OutMessage)
+{
+    OutInventoryItems.Empty();
+    OutMessage = TEXT("");
+
+    if (!IsConnectedToServer() || !ClientPacketManager)
+    {
+        OutMessage = TEXT("ì„œë²„ ì—°ê²° ë˜ëŠ” PacketManager ì˜¤ë¥˜");
+        return false;
+    }
+
+    // ì¸ë²¤í† ë¦¬ ì¡°íšŒ (RequestType = 0: ì¸ë²¤í† ë¦¬, ItemID = 0: ì „ì²´)
+    TArray<uint8> Packet = ClientPacketManager->CreateItemDataRequest(UserID, 0, 0, 0);
+    if (Packet.Num() == 0 || !SendPacketData(Packet))
+    {
+        OutMessage = TEXT("ì¸ë²¤í† ë¦¬ ìš”ì²­ ì‹¤íŒ¨");
+        return false;
+    }
+
+    // ì‘ë‹µ ìˆ˜ì‹  ë° íŒŒì‹±
+    TArray<uint8> ResponseData;
+    if (!ReceivePacketData(ResponseData, PacketTimeout))
+    {
+        OutMessage = TEXT("ì¸ë²¤í† ë¦¬ ì‘ë‹µ ì‹œê°„ ì´ˆê³¼");
+        return false;
+    }
+
+    if (!ClientPacketManager->ParseItemDataResponse(ResponseData, OutInventoryItems))
+    {
+        OutMessage = TEXT("ì¸ë²¤í† ë¦¬ íŒŒì‹± ì‹¤íŒ¨");
+        return false;
+    }
+
+    OutMessage = FString::Printf(TEXT("ì¸ë²¤í† ë¦¬ ì¡°íšŒ ì„±ê³µ (%dê°œ ì•„ì´í…œ)"), OutInventoryItems.Num());
+    return true;
+}
+
+bool ANetworkManager::GetStoreItemList(int32 ShopID, TArray<FAccountItemInfo>& OutShopItems, FString& OutMessage)
+{
+    OutShopItems.Empty();
+    OutMessage = TEXT("");
+
+    if (!IsConnectedToServer() || !ClientPacketManager)
+    {
+        OutMessage = TEXT("ì„œë²„ ì—°ê²° ë˜ëŠ” PacketManager ì˜¤ë¥˜");
+        return false;
+    }
+
+    // ìƒì  ì•„ì´í…œ ëª©ë¡ ìš”ì²­
+    TArray<uint8> Packet = ClientPacketManager->CreateStoreItemsRequest(ShopID);
+    if (Packet.Num() == 0 || !SendPacketData(Packet))
+    {
+        OutMessage = TEXT("ìƒì  ì•„ì´í…œ ìš”ì²­ ì‹¤íŒ¨");
+        return false;
+    }
+
+    // ì‘ë‹µ ìˆ˜ì‹  ë° íŒŒì‹±
+    TArray<uint8> ResponseData;
+    if (!ReceivePacketData(ResponseData, PacketTimeout))
+    {
+        OutMessage = TEXT("ìƒì  ì•„ì´í…œ ì‘ë‹µ ì‹œê°„ ì´ˆê³¼");
+        return false;
+    }
+
+    if (!ClientPacketManager->ParseStoreItemsResponse(ResponseData, OutShopItems))
+    {
+        OutMessage = TEXT("ìƒì  ì•„ì´í…œ íŒŒì‹± ì‹¤íŒ¨");
+        return false;
+    }
+
+    OutMessage = FString::Printf(TEXT("ìƒì  ì•„ì´í…œ ì¡°íšŒ ì„±ê³µ (%dê°œ ì•„ì´í…œ)"), OutShopItems.Num());
+    return true;
+}
+
+bool ANetworkManager::GetSingleItemInfo(int32 UserID, int32 ItemID, FAccountItemInfo& OutItemInfo, FString& OutMessage)
+{
+    OutItemInfo = FAccountItemInfo();
+    OutMessage = TEXT("");
+
+    if (!IsConnectedToServer() || !ClientPacketManager)
+    {
+        OutMessage = TEXT("ì„œë²„ ì—°ê²° ë˜ëŠ” PacketManager ì˜¤ë¥˜");
+        return false;
+    }
+
+    if (UserID <= 0)
+    {
+        OutMessage = TEXT("ìœ íš¨í•˜ì§€ ì•Šì€ ì‚¬ìš©ì IDì…ë‹ˆë‹¤");
+        return false;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Requesting single item info: UserID %d, ItemID %d"), UserID, ItemID);
+
+    // íŠ¹ì • ì•„ì´í…œ ì •ë³´ ìš”ì²­ (RequestType = 3: íŠ¹ì • ì•„ì´í…œ ì¡°íšŒ)
+    TArray<uint8> Packet = ClientPacketManager->CreateItemDataRequest(UserID, 3, ItemID, 0);
+    if (Packet.Num() == 0 || !SendPacketData(Packet))
+    {
+        OutMessage = TEXT("ì•„ì´í…œ ì •ë³´ ìš”ì²­ ì‹¤íŒ¨");
+        return false;
+    }
+
+    // ì‘ë‹µ ìˆ˜ì‹  ë° íŒŒì‹±
+    TArray<uint8> ResponseData;
+    if (!ReceivePacketData(ResponseData, PacketTimeout))
+    {
+        OutMessage = TEXT("ì•„ì´í…œ ì •ë³´ ì‘ë‹µ ì‹œê°„ ì´ˆê³¼");
+        return false;
+    }
+
+    TArray<FAccountItemInfo> ItemList;
+    if (!ClientPacketManager->ParseItemDataResponse(ResponseData, ItemList))
+    {
+        OutMessage = TEXT("ì•„ì´í…œ ì •ë³´ íŒŒì‹± ì‹¤íŒ¨");
+        return false;
+    }
+
+    if (ItemList.Num() > 0)
+    {
+        OutItemInfo = ItemList[0];
+        UE_LOG(LogTemp, Log, TEXT("Single item info received: %s (ID: %d)"), *OutItemInfo.ItemName, OutItemInfo.ItemID);
+        OutMessage = TEXT("ì•„ì´í…œ ì •ë³´ ì¡°íšŒ ì„±ê³µ");
+        return true;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Item not found: ItemID %d"), ItemID);
+        OutMessage = TEXT("ì•„ì´í…œì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤");
+        return false;
+    }
 }
 
 void ANetworkManager::SetConnectionState(ENetConnectionState NewState)
@@ -274,7 +703,7 @@ void ANetworkManager::StartReconnectTimer()
             this,
             &ANetworkManager::TryReconnect,
             ReconnectInterval,
-            true // ¹İº¹
+            true // ë°˜ë³µ
         );
         UE_LOG(LogTemp, Log, TEXT("Reconnect timer started (%.1f seconds interval)"), ReconnectInterval);
     }
@@ -299,12 +728,12 @@ void ANetworkManager::TryReconnect()
 
     UE_LOG(LogTemp, Log, TEXT("Attempting to reconnect to server: %s:%d"), *CurrentServerIP, CurrentServerPort);
 
-    // ±âÁ¸ ¼ÒÄÏ Á¤¸®
+    // ê¸°ì¡´ ì†Œì¼“ ì •ë¦¬
     CleanupSocket();
 
     if (CreateSocket())
     {
-        // ¼­¹ö ÁÖ¼Ò »ı¼º
+        // ì„œë²„ ì£¼ì†Œ ìƒì„±
         ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
         TSharedRef<FInternetAddr> ServerAddress = SocketSubsystem->CreateInternetAddr();
 
@@ -314,14 +743,14 @@ void ANetworkManager::TryReconnect()
 
         if (bIsValidIP)
         {
-            // ¼­¹ö¿¡ ¿¬°á ½Ãµµ
+            // ì„œë²„ì— ì—°ê²° ì‹œë„
             bool bConnected = ClientSocket->Connect(*ServerAddress);
 
             if (bConnected)
             {
                 UE_LOG(LogTemp, Log, TEXT("Reconnection successful!"));
                 SetConnectionState(ENetConnectionState::Connected);
-                StopReconnectTimer(); // ¿¬°á ¼º°ø ½Ã Å¸ÀÌ¸Ó ÁßÁö
+                StopReconnectTimer(); // ì—°ê²° ì„±ê³µ ì‹œ íƒ€ì´ë¨¸ ì¤‘ì§€
             }
             else
             {
@@ -347,7 +776,7 @@ bool ANetworkManager::CreateSocket()
         return false;
     }
 
-    // TCP ¼ÒÄÏ »ı¼º
+    // TCP ì†Œì¼“ ìƒì„±
     ClientSocket = SocketSubsystem->CreateSocket(NAME_Stream, TEXT("NetworkManager Socket"), false);
 
     if (!ClientSocket)
@@ -356,14 +785,14 @@ bool ANetworkManager::CreateSocket()
         return false;
     }
 
-    // ¼ÒÄÏ ¿É¼Ç ¼³Á¤
+    // ì†Œì¼“ ì˜µì…˜ ì„¤ì •
     int32 SendBufferSize = 32 * 1024; // 32KB
     int32 RecvBufferSize = 32 * 1024; // 32KB
 
     ClientSocket->SetSendBufferSize(SendBufferSize, SendBufferSize);
     ClientSocket->SetReceiveBufferSize(RecvBufferSize, RecvBufferSize);
 
-    // ºí·ÎÅ· ¸ğµå ¼³Á¤ (ÃßÈÄ ³íºí·ÎÅ·À¸·Î º¯°æÇÒ ¼ö ÀÖÀ½)
+    // ë¸”ë¡œí‚¹ ëª¨ë“œ ì„¤ì • (ì¶”í›„ ë…¼ë¸”ë¡œí‚¹ìœ¼ë¡œ ë³€ê²½í•  ìˆ˜ ìˆìŒ)
     ClientSocket->SetNonBlocking(false);
 
     UE_LOG(LogTemp, Log, TEXT("Socket created successfully"));
@@ -389,11 +818,11 @@ bool ANetworkManager::SendPacketData(const TArray<uint8>& PacketData)
         return false;
     }
 
-    // ÆĞÅ¶ Å©±â Çì´õ Ãß°¡ (4¹ÙÀÌÆ®) + ½ÇÁ¦ ÆĞÅ¶ µ¥ÀÌÅÍ
+    // íŒ¨í‚· í¬ê¸° í—¤ë” ì¶”ê°€ (4ë°”ì´íŠ¸) + ì‹¤ì œ íŒ¨í‚· ë°ì´í„°
     uint32 PacketSize = PacketData.Num();
-    uint32 NetworkSize = NETWORK_ORDER32(PacketSize); // ³×Æ®¿öÅ© ¹ÙÀÌÆ® ¼ø¼­·Î º¯È¯
+    uint32 NetworkSize = NETWORK_ORDER32(PacketSize); // ë„¤íŠ¸ì›Œí¬ ë°”ì´íŠ¸ ìˆœì„œë¡œ ë³€í™˜
 
-    // ÃÖÁ¾ Àü¼ÛÇÒ µ¥ÀÌÅÍ ±¸¼º (Å©±â Çì´õ + ÆĞÅ¶ µ¥ÀÌÅÍ)
+    // ìµœì¢… ì „ì†¡í•  ë°ì´í„° êµ¬ì„± (í¬ê¸° í—¤ë” + íŒ¨í‚· ë°ì´í„°)
     TArray<uint8> FinalData;
     FinalData.Append(reinterpret_cast<const uint8*>(&NetworkSize), sizeof(uint32));
     FinalData.Append(PacketData);
@@ -427,7 +856,7 @@ bool ANetworkManager::ReceivePacketData(TArray<uint8>& OutPacketData, float Time
 
     UE_LOG(LogTemp, Log, TEXT("Waiting for packet header..."));
 
-    // ÆĞÅ¶ Çì´õ(Å©±â) ¸ÕÀú ¼ö½Å
+    // íŒ¨í‚· í—¤ë”(í¬ê¸°) ë¨¼ì € ìˆ˜ì‹ 
     while (!bHeaderReceived && (FPlatformTime::Seconds() - StartTime) < TimeoutSeconds)
     {
         uint32 PendingDataSize = 0;
@@ -438,14 +867,14 @@ bool ANetworkManager::ReceivePacketData(TArray<uint8>& OutPacketData, float Time
             {
                 if (BytesRead == sizeof(uint32))
                 {
-                    // ³×Æ®¿öÅ© ¹ÙÀÌÆ® ¼ø¼­¿¡¼­ È£½ºÆ® ¹ÙÀÌÆ® ¼ø¼­·Î º¯È¯
+                    // ë„¤íŠ¸ì›Œí¬ ë°”ì´íŠ¸ ìˆœì„œì—ì„œ í˜¸ìŠ¤íŠ¸ ë°”ì´íŠ¸ ìˆœì„œë¡œ ë³€í™˜
                     PacketSize = NETWORK_ORDER32(PacketSize);
                     bHeaderReceived = true;
                     UE_LOG(LogTemp, Log, TEXT("Received packet header, size: %d bytes"), PacketSize);
                 }
             }
         }
-        FPlatformProcess::Sleep(0.001f); // 1ms ´ë±â
+        FPlatformProcess::Sleep(0.001f); // 1ms ëŒ€ê¸°
     }
 
     if (!bHeaderReceived)
@@ -454,13 +883,13 @@ bool ANetworkManager::ReceivePacketData(TArray<uint8>& OutPacketData, float Time
         return false;
     }
 
-    if (PacketSize == 0 || PacketSize > 65536) // ÃÖ´ë 64KB Á¦ÇÑ
+    if (PacketSize == 0 || PacketSize > 65536) // ìµœëŒ€ 64KB ì œí•œ
     {
         UE_LOG(LogTemp, Error, TEXT("Invalid packet size: %d"), PacketSize);
         return false;
     }
 
-    // ½ÇÁ¦ ÆĞÅ¶ µ¥ÀÌÅÍ ¼ö½Å
+    // ì‹¤ì œ íŒ¨í‚· ë°ì´í„° ìˆ˜ì‹ 
     OutPacketData.SetNum(PacketSize);
     int32 TotalReceived = 0;
 
@@ -480,7 +909,7 @@ bool ANetworkManager::ReceivePacketData(TArray<uint8>& OutPacketData, float Time
                 UE_LOG(LogTemp, VeryVerbose, TEXT("Received %d bytes, total: %d/%d"), BytesRead, TotalReceived, PacketSize);
             }
         }
-        FPlatformProcess::Sleep(0.001f); // 1ms ´ë±â
+        FPlatformProcess::Sleep(0.001f); // 1ms ëŒ€ê¸°
     }
 
     if (TotalReceived != static_cast<int32>(PacketSize))

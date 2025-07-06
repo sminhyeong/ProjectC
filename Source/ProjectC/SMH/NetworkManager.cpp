@@ -985,7 +985,7 @@ bool ANetworkManager::CreateServerAddress(const FString& IP, int32 Port, TShared
         return false;
     }
 
-    OutAddress->SetPort(static_cast<uint16>(Port));
+    OutAddress->SetPort(Port);
 
     // IP 설정 시도 (여러 방법으로)
     bool bIsValidIP = false;

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ClientPacketManager.h"
 #include "NetworkManager.generated.h"
 
 // 전방 선언
@@ -9,7 +10,6 @@ class FSocket;
 class FInternetAddr;
 class FTimerManager;
 class UClientPacketManager;
-struct FAccountLoginResponse;
 
 // 연결 상태 열거형
 UENUM(BlueprintType)
@@ -54,10 +54,10 @@ public:
 
     // 로그인/로그아웃 관련 함수들 - ClientPacketManager 사용
     UFUNCTION(BlueprintCallable, Category = "Network")
-    bool LoginToServer(const FString& Username, const FString& Password, struct FAccountLoginResponse& OutResponse);
+    bool LoginToServer(const FString& Username, const FString& Password, FString& OutMessage);
 
     UFUNCTION(BlueprintCallable, Category = "Network")
-    bool LogoutFromServer(int32 UserID, FString& OutMessage);
+    bool LogoutFromServer(FString& OutMessage);
 
     UFUNCTION(BlueprintCallable, Category = "Network")
     bool CreateAccountToServer(const FString& Username, const FString& Password, const FString& Nickname, int32& OutUserID, FString& OutMessage);
@@ -91,6 +91,25 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Network|Item")
     bool GetSingleItemInfo(int32 UserID, int32 ItemID, FAccountItemInfo& OutItemInfo, FString& OutMessage);
 
+    // 유저 데이터 접근 함수들
+    UFUNCTION(BlueprintPure, Category = "User Data")
+    bool IsLogin() const;
+
+    UFUNCTION(BlueprintPure, Category = "User Data")
+    int32 GetCurrentUserID() const;
+
+    UFUNCTION(BlueprintPure, Category = "User Data")
+    FString GetCurrentUsername() const;
+
+    UFUNCTION(BlueprintPure, Category = "User Data")
+    FString GetCurrentNickname() const;
+
+    UFUNCTION(BlueprintPure, Category = "User Data")
+    int32 GetCurrentLevel() const;
+
+    UFUNCTION(BlueprintPure, Category = "User Data")
+    FAccountLoginResponse GetCurrentUserData() const;
+
 protected:
     // 서버 정보
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Network Settings")
@@ -104,6 +123,12 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Network Settings")
     float PacketTimeout;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Network Settings")
+    float ConnectionTimeout = 10.0f; // 연결 타임아웃 설정
+
+    //로그인한 유저의 데이터 저장
+    FAccountLoginResponse CurrentUserData;
 
 private:
     // 소켓 관련
@@ -139,6 +164,11 @@ private:
 
 
     bool CreateServerAddress(const FString& IP, int32 Port, TSharedRef<FInternetAddr>& OutAddress);
+   
+    // 유저 데이터 초기화 함수
+    void ClearUserData();
+
+
     // TODO: 추후 구현할 기능들
     // - 회원가입 기능
     // - 게임 서버 생성/리스트 불러오기

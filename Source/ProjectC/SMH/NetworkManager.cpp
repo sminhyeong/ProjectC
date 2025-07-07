@@ -5,7 +5,6 @@
 #endif
 
 #include "NetworkManager.h"
-#include "ClientPacketManager.h"
 #include "SocketSubsystem.h"
 #include "Common/TcpSocketBuilder.h"
 #include "IPAddress.h"
@@ -74,25 +73,60 @@ void ANetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
 
     if (CreateSocket())
     {
-        // 완전히 새로운 방법: 기존 CreateServerAddress 함수 활용
         TSharedRef<FInternetAddr> ServerAddress = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
 
         if (CreateServerAddress(ServerIP, ServerPort, ServerAddress))
         {
-            // 서버에 연결 시도
+            // 논블로킹 모드로 연결 시도
+            ClientSocket->SetNonBlocking(true);
+
             bool bConnected = ClientSocket->Connect(*ServerAddress);
+
+            UE_LOG(LogTemp,Warning, TEXT("Connected %d"),(int)bConnected);
 
             if (bConnected)
             {
-                UE_LOG(LogTemp, Log, TEXT("Successfully connected to server: %s:%d"), *ServerIP, ServerPort);
-                SetConnectionState(ENetConnectionState::Connected);
-                StopReconnectTimer(); // 연결 성공 시 재연결 타이머 중지
+                // 즉시 연결 성공 (로컬 등) - 이 주석도 틀림
+                UE_LOG(LogTemp, Log, TEXT("Connect() returned true, checking actual connection state"));
+
+                // Connected 상태로 바로 변경하지 말고, 실제 소켓 상태 확인
+                ESocketConnectionState SocketState = ClientSocket->GetConnectionState();
+                if (SocketState == SCS_Connected)
+                {
+                    // 정말 즉시 연결된 경우 (매우 드뭄)
+                    UE_LOG(LogTemp, Log, TEXT("Actually connected immediately"));
+                    ClientSocket->SetNonBlocking(false);
+                    SetConnectionState(ENetConnectionState::Connected);
+                    StopReconnectTimer();
+                }
+                else
+                {
+                    // 대부분의 경우 - 연결 진행 중
+                    UE_LOG(LogTemp, Log, TEXT("Connection in progress, starting status check"));
+                    // 타이머 시작 로직
+                    if (GetWorld())
+                    {
+                        GetWorld()->GetTimerManager().SetTimer(
+                            ReconnectTimerHandle, this, &ANetworkManager::TryReconnect, 0.1f, true);
+                    }
+                }
             }
             else
             {
-                UE_LOG(LogTemp, Warning, TEXT("Failed to connect to server: %s:%d - Starting reconnect timer"), *ServerIP, ServerPort);
-                SetConnectionState(ENetConnectionState::Reconnecting);
-                StartReconnectTimer(); // 재연결 타이머 시작
+                // 논블로킹 연결 진행 중 - 타이머로 상태 체크
+                UE_LOG(LogTemp, Log, TEXT("Non-blocking connection started, checking status..."));
+
+                // 기존 재연결 타이머를 연결 상태 체크용으로 활용
+                if (GetWorld())
+                {
+                    GetWorld()->GetTimerManager().SetTimer(
+                        ReconnectTimerHandle,
+                        this,
+                        &ANetworkManager::TryReconnect, // 기존 함수를 상태 체크용으로 재활용
+                        0.1f,  // 100ms마다 체크
+                        true   // 반복
+                    );
+                }
             }
         }
         else
@@ -130,24 +164,23 @@ ENetConnectionState ANetworkManager::GetConnectionState() const
     return ConnectionState;
 }
 
-bool ANetworkManager::LoginToServer(const FString& Username, const FString& Password, FAccountLoginResponse& OutResponse)
+bool ANetworkManager::LoginToServer(const FString& Username, const FString& Password, FString& OutMessage)
 {
-    // OutResponse 초기화
-    OutResponse = FAccountLoginResponse();
+    // 기존 유저 데이터 초기화
+    ClearUserData();
+    OutMessage = TEXT("");
 
     if (!IsConnectedToServer())
     {
         UE_LOG(LogTemp, Error, TEXT("Not connected to server"));
-        OutResponse.bSuccess = false;
-        OutResponse.Message = TEXT("Not connected to server");
+        OutMessage = TEXT("Not connected to server");
         return false;
     }
 
     if (!ClientPacketManager)
     {
         UE_LOG(LogTemp, Error, TEXT("ClientPacketManager is null"));
-        OutResponse.bSuccess = false;
-        OutResponse.Message = TEXT("ClientPacketManager is null");
+        OutMessage = TEXT("ClientPacketManager is null");
         return false;
     }
 
@@ -158,16 +191,14 @@ bool ANetworkManager::LoginToServer(const FString& Username, const FString& Pass
     if (LoginPacket.Num() == 0)
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to create login packet: %s"), *ClientPacketManager->GetLastError());
-        OutResponse.bSuccess = false;
-        OutResponse.Message = FString::Printf(TEXT("Failed to create login packet: %s"), *ClientPacketManager->GetLastError());
+        OutMessage = FString::Printf(TEXT("Failed to create login packet: %s"), *ClientPacketManager->GetLastError());
         return false;
     }
 
     if (!SendPacketData(LoginPacket))
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to send login packet"));
-        OutResponse.bSuccess = false;
-        OutResponse.Message = TEXT("Failed to send login packet");
+        OutMessage = TEXT("Failed to send login packet");
         return false;
     }
 
@@ -176,63 +207,74 @@ bool ANetworkManager::LoginToServer(const FString& Username, const FString& Pass
     if (!ReceivePacketData(ResponseData, PacketTimeout))
     {
         UE_LOG(LogTemp, Error, TEXT("Login response timeout"));
-        OutResponse.bSuccess = false;
-        OutResponse.Message = TEXT("Login response timeout");
+        OutMessage = TEXT("Login response timeout");
         return false;
     }
 
-    // ClientPacketManager를 사용해서 응답 파싱
-    if (!ClientPacketManager->ParseLoginResponse(ResponseData, OutResponse))
+    // 응답 파싱하여 CurrentUserData에 직접 저장
+    if (!ClientPacketManager->ParseLoginResponse(ResponseData, CurrentUserData))
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to parse login response: %s"), *ClientPacketManager->GetLastError());
-        OutResponse.bSuccess = false;
-        OutResponse.Message = FString::Printf(TEXT("Failed to parse login response: %s"), *ClientPacketManager->GetLastError());
+        OutMessage = FString::Printf(TEXT("Failed to parse login response: %s"), *ClientPacketManager->GetLastError());
         return false;
     }
 
-    // 로그인 결과 로그 출력
-    if (OutResponse.bSuccess)
+    // 로그인 결과 처리
+    if (CurrentUserData.bSuccess)
     {
+        OutMessage = CurrentUserData.Message;
         UE_LOG(LogTemp, Log, TEXT("Login Success - UserID: %d, Username: %s, Nickname: %s, Level: %d"),
-            OutResponse.UserID, *OutResponse.Username, *OutResponse.Nickname, OutResponse.Level);
+            CurrentUserData.UserID, *CurrentUserData.Username, *CurrentUserData.Nickname, CurrentUserData.Level);
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("Login Failed - Message: %s"), *OutResponse.Message);
+        OutMessage = CurrentUserData.Message;
+        UE_LOG(LogTemp, Warning, TEXT("Login Failed - Message: %s"), *OutMessage);
+        // 실패 시 데이터 초기화
+        ClearUserData();
     }
 
-    // 성공/실패와 관계없이 OutResponse에 모든 정보가 담겨있으므로 true 반환
-    // 실제 성공 여부는 OutResponse.bSuccess로 확인
-    return OutResponse.bSuccess;
+    return CurrentUserData.bSuccess;
 }
 
-bool ANetworkManager::LogoutFromServer(int32 UserID, FString& OutMessage)
+bool ANetworkManager::LogoutFromServer(FString& OutMessage)
 {
     if (!IsConnectedToServer())
     {
         UE_LOG(LogTemp, Error, TEXT("Not connected to server"));
+        OutMessage = TEXT("Not connected to server");
+        return false;
+    }
+
+    if (!IsLogin())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("User is not logged in"));
+        OutMessage = TEXT("User is not logged in");
         return false;
     }
 
     if (!ClientPacketManager)
     {
         UE_LOG(LogTemp, Error, TEXT("ClientPacketManager is null"));
+        OutMessage = TEXT("ClientPacketManager is null");
         return false;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("Attempting logout for UserID: %d"), UserID);
+    UE_LOG(LogTemp, Log, TEXT("Attempting logout for UserID: %d"), CurrentUserData.UserID);
 
-    // ClientPacketManager를 사용해서 로그아웃 패킷 생성
-    TArray<uint8> LogoutPacket = ClientPacketManager->CreateLogoutRequest(UserID);
+    // CurrentUserData에서 UserID 가져와서 로그아웃 패킷 생성
+    TArray<uint8> LogoutPacket = ClientPacketManager->CreateLogoutRequest(CurrentUserData.UserID);
     if (LogoutPacket.Num() == 0)
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to create logout packet: %s"), *ClientPacketManager->GetLastError());
+        OutMessage = FString::Printf(TEXT("Failed to create logout packet: %s"), *ClientPacketManager->GetLastError());
         return false;
     }
 
     if (!SendPacketData(LogoutPacket))
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to send logout packet"));
+        OutMessage = TEXT("Failed to send logout packet");
         return false;
     }
 
@@ -241,17 +283,22 @@ bool ANetworkManager::LogoutFromServer(int32 UserID, FString& OutMessage)
     if (!ReceivePacketData(ResponseData, PacketTimeout))
     {
         UE_LOG(LogTemp, Error, TEXT("Logout response timeout"));
+        OutMessage = TEXT("Logout response timeout");
         return false;
     }
 
-    // ClientPacketManager를 사용해서 응답 파싱
+    // 응답 파싱
     if (!ClientPacketManager->ParseLogoutResponse(ResponseData, OutMessage))
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to parse logout response: %s"), *ClientPacketManager->GetLastError());
+        OutMessage = FString::Printf(TEXT("Failed to parse logout response: %s"), *ClientPacketManager->GetLastError());
         return false;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("Logout result: %s"), *OutMessage);
+    // 로그아웃 성공 시 유저 데이터 초기화
+    ClearUserData();
+
+    UE_LOG(LogTemp, Log, TEXT("Logout Success - Message: %s"), *OutMessage);
     return true;
 }
 
@@ -687,6 +734,42 @@ bool ANetworkManager::GetSingleItemInfo(int32 UserID, int32 ItemID, FAccountItem
     }
 }
 
+bool ANetworkManager::IsLogin() const
+{
+    return CurrentUserData.bSuccess;
+}
+
+int32 ANetworkManager::GetCurrentUserID() const
+{
+    return CurrentUserData.UserID;
+}
+
+FString ANetworkManager::GetCurrentUsername() const
+{
+    return CurrentUserData.Username;
+}
+
+FString ANetworkManager::GetCurrentNickname() const
+{
+    return CurrentUserData.Nickname;
+}
+
+int32 ANetworkManager::GetCurrentLevel() const
+{
+    return CurrentUserData.Level;
+}
+
+FAccountLoginResponse ANetworkManager::GetCurrentUserData() const
+{
+    return CurrentUserData;
+}
+
+void ANetworkManager::ClearUserData()
+{
+    CurrentUserData = FAccountLoginResponse(); // 구조체 기본값으로 초기화
+    UE_LOG(LogTemp, Log, TEXT("User data cleared"));
+}
+
 void ANetworkManager::SetConnectionState(ENetConnectionState NewState)
 {
     if (ConnectionState != NewState)
@@ -702,14 +785,18 @@ void ANetworkManager::StartReconnectTimer()
 {
     if (GetWorld())
     {
+        // 재연결 간격을 더 자주 체크하도록 수정 (상태 체크용으로도 사용)
+        float CheckInterval = (ConnectionState == ENetConnectionState::Connecting) ? 0.1f : ReconnectInterval;
+
         GetWorld()->GetTimerManager().SetTimer(
             ReconnectTimerHandle,
             this,
             &ANetworkManager::TryReconnect,
-            ReconnectInterval,
+            CheckInterval,
             true // 반복
         );
-        UE_LOG(LogTemp, Log, TEXT("Reconnect timer started (%.1f seconds interval)"), ReconnectInterval);
+
+        UE_LOG(LogTemp, Log, TEXT("Timer started (%.1f seconds interval)"), CheckInterval);
     }
 }
 
@@ -724,6 +811,33 @@ void ANetworkManager::StopReconnectTimer()
 
 void ANetworkManager::TryReconnect()
 {
+    // 현재 연결 상태가 Connecting인 경우 - 연결 진행 상태 체크
+    if (ConnectionState == ENetConnectionState::Connecting && ClientSocket)
+    {
+        ESocketConnectionState SocketState = ClientSocket->GetConnectionState();
+
+        if (SocketState == SCS_Connected)
+        {
+            // 연결 성공
+            UE_LOG(LogTemp, Log, TEXT("Async connection successful!"));
+            StopReconnectTimer();
+            ClientSocket->SetNonBlocking(false); // 블로킹 모드로 복원
+            SetConnectionState(ENetConnectionState::Connected);
+            return;
+        }
+        else if (SocketState == SCS_ConnectionError)
+        {
+            // 연결 실패 - 재연결 모드로 전환
+            UE_LOG(LogTemp, Warning, TEXT("Connection failed - switching to reconnect mode"));
+            CleanupSocket();
+            SetConnectionState(ENetConnectionState::Reconnecting);
+            return;
+        }
+        // SCS_NotConnected인 경우 계속 대기 (연결 진행 중)
+        return;
+    }
+
+    // 기존 재연결 로직 (Reconnecting 상태일 때)
     if (ConnectionState != ENetConnectionState::Reconnecting)
     {
         StopReconnectTimer();
@@ -732,7 +846,6 @@ void ANetworkManager::TryReconnect()
 
     UE_LOG(LogTemp, Log, TEXT("Attempting to reconnect to server: %s:%d"), *CurrentServerIP, CurrentServerPort);
 
-    // 기존 소켓 정리
     CleanupSocket();
 
     if (CreateSocket())
@@ -741,18 +854,22 @@ void ANetworkManager::TryReconnect()
 
         if (CreateServerAddress(CurrentServerIP, CurrentServerPort, ServerAddress))
         {
+            // 재연결도 논블로킹으로 시도
+            ClientSocket->SetNonBlocking(true);
             bool bConnected = ClientSocket->Connect(*ServerAddress);
 
             if (bConnected)
             {
                 UE_LOG(LogTemp, Log, TEXT("Reconnection successful!"));
-                SetConnectionState(ENetConnectionState::Connected);
                 StopReconnectTimer();
+                ClientSocket->SetNonBlocking(false);
+                SetConnectionState(ENetConnectionState::Connected);
             }
             else
             {
-                UE_LOG(LogTemp, Warning, TEXT("Reconnection failed, will try again..."));
-                CleanupSocket();
+                // 재연결 진행 중 - 상태를 Connecting으로 변경하여 상태 체크 모드로 전환
+                SetConnectionState(ENetConnectionState::Connecting);
+                // 타이머는 그대로 유지 (이미 실행 중)
             }
         }
         else

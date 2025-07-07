@@ -1,4 +1,8 @@
-﻿#include "NetworkManager.h"
+﻿#ifdef SetPort
+#undef SetPort
+#endif
+
+#include "NetworkManager.h"
 #include "ClientPacketManager.h"
 #include "SocketSubsystem.h"
 #include "Common/TcpSocketBuilder.h"
@@ -6,7 +10,8 @@
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
-#include "SocketTypes.h" 
+#include "SocketTypes.h"
+#include "Networking.h"
 
 ANetworkManager::ANetworkManager()
 {
@@ -67,46 +72,32 @@ void ANetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
 
     if (CreateSocket())
     {
-        // 서버 주소 생성
-        //ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
-        //TSharedRef<FInternetAddr> ServerAddress = SocketSubsystem->CreateInternetAddr();
-
-        //bool bIsValidIP = false;
-        //ServerAddress->SetIp(*ServerIP, bIsValidIP);
-        //ServerAddress->SetPort(ServerPort);
-
-        //if (!bIsValidIP)
-        //{
-        //    UE_LOG(LogTemp, Error, TEXT("Invalid IP address: %s"), *ServerIP);
-        //    SetConnectionState(ENetConnectionState::Failed);
-        //    CleanupSocket();
-        //    return;
-        //}
-
+        // 완전히 새로운 방법: 기존 CreateServerAddress 함수 활용
         TSharedRef<FInternetAddr> ServerAddress = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
 
-        if (!CreateServerAddress(ServerIP, ServerPort, ServerAddress))
+        if (CreateServerAddress(ServerIP, ServerPort, ServerAddress))
+        {
+            // 서버에 연결 시도
+            bool bConnected = ClientSocket->Connect(*ServerAddress);
+
+            if (bConnected)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Successfully connected to server: %s:%d"), *ServerIP, ServerPort);
+                SetConnectionState(ENetConnectionState::Connected);
+                StopReconnectTimer(); // 연결 성공 시 재연결 타이머 중지
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Failed to connect to server: %s:%d - Starting reconnect timer"), *ServerIP, ServerPort);
+                SetConnectionState(ENetConnectionState::Reconnecting);
+                StartReconnectTimer(); // 재연결 타이머 시작
+            }
+        }
+        else
         {
             UE_LOG(LogTemp, Error, TEXT("Failed to create server address: %s:%d"), *ServerIP, ServerPort);
             SetConnectionState(ENetConnectionState::Failed);
             CleanupSocket();
-            return;
-        }
-
-        // 서버에 연결 시도
-        bool bConnected = ClientSocket->Connect(*ServerAddress);
-
-        if (bConnected)
-        {
-            UE_LOG(LogTemp, Log, TEXT("Successfully connected to server: %s:%d"), *ServerIP, ServerPort);
-            SetConnectionState(ENetConnectionState::Connected);
-            StopReconnectTimer(); // 연결 성공 시 재연결 타이머 중지
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Failed to connect to server: %s:%d - Starting reconnect timer"), *ServerIP, ServerPort);
-            SetConnectionState(ENetConnectionState::Reconnecting);
-            StartReconnectTimer(); // 재연결 타이머 시작
         }
     }
     else
@@ -744,36 +735,6 @@ void ANetworkManager::TryReconnect()
 
     if (CreateSocket())
     {
-        //// 서버 주소 생성
-        //ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
-        //TSharedRef<FInternetAddr> ServerAddress = SocketSubsystem->CreateInternetAddr();
-
-        //bool bIsValidIP = false;
-        //ServerAddress->SetIp(*CurrentServerIP, bIsValidIP);
-        //ServerAddress->SetPort(CurrentServerPort);
-
-        //if (bIsValidIP)
-        //{
-        //    // 서버에 연결 시도
-        //    bool bConnected = ClientSocket->Connect(*ServerAddress);
-
-        //    if (bConnected)
-        //    {
-        //        UE_LOG(LogTemp, Log, TEXT("Reconnection successful!"));
-        //        SetConnectionState(ENetConnectionState::Connected);
-        //        StopReconnectTimer(); // 연결 성공 시 타이머 중지
-        //    }
-        //    else
-        //    {
-        //        UE_LOG(LogTemp, Warning, TEXT("Reconnection failed, will try again..."));
-        //        CleanupSocket();
-        //    }
-        //}
-        //else
-        //{
-        //    UE_LOG(LogTemp, Error, TEXT("Invalid IP address during reconnection"));
-        //    CleanupSocket();
-        //}
         TSharedRef<FInternetAddr> ServerAddress = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
 
         if (CreateServerAddress(CurrentServerIP, CurrentServerPort, ServerAddress))

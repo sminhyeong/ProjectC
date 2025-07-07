@@ -5,11 +5,12 @@ using System.Collections.Generic;
 
 public class ProjectCTarget : TargetRules
 {
-	public ProjectCTarget(TargetInfo Target) : base(Target)
-	{
-		Type = TargetType.Game;
-		DefaultBuildSettings = BuildSettingsVersion.Latest;
+    public ProjectCTarget(TargetInfo Target) : base(Target)
+    {
+        Type = TargetType.Game;
+        DefaultBuildSettings = BuildSettingsVersion.Latest;
+        IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 
-		ExtraModuleNames.AddRange( new string[] { "ProjectC" } );
-	}
+        ExtraModuleNames.AddRange(new string[] { "ProjectC" });
+    }
 }

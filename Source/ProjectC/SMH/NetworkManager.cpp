@@ -1,5 +1,7 @@
-﻿#ifdef SetPort
+﻿#ifdef _WIN32
+#ifdef SetPort
 #undef SetPort
+#endif
 #endif
 
 #include "NetworkManager.h"

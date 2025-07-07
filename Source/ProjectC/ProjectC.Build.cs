@@ -14,18 +14,18 @@ public class ProjectC : ModuleRules
 
         PublicIncludePaths.AddRange(new string[] { "flatbuffers" });   //flatbuffers, etc
 
-        // 유니코드 설정 추가
-        PublicDefinitions.Add("UNICODE=1");
-        PublicDefinitions.Add("_UNICODE=1");
-
-        // 또는 MBCS를 명시적으로 비활성화
-        PublicDefinitions.Add("_MBCS=0");
-
-        // Windows 플랫폼에서 컴파일러 경고 억제
         if (Target.Platform == UnrealTargetPlatform.Win64)
         {
             PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS");
+            PublicDefinitions.Add("NOMINMAX");
+            PublicDefinitions.Add("WIN32_LEAN_AND_MEAN");
         }
+
+        //// Windows 플랫폼에서 컴파일러 경고 억제
+        //if (Target.Platform == UnrealTargetPlatform.Win64)
+        //{
+        //    PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS");
+        //}
 
         // Uncomment if you are using Slate UI
         // PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

@@ -198,6 +198,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Shop")
     TArray<uint8> CreateStoreItemsRequest(int32 ShopID);
 
+    // 상점 거래 요청 생성 (C2S)
+    TArray<uint8> CreateShopTransactionRequest(int32 UserID, int32 ItemID, int32 ItemCount, int32 TransactionType);
+
     // === 서버 응답 패킷 파싱 (S2C) ===
 
     // 로그인 응답 파싱
@@ -264,6 +267,9 @@ public:
     // 마지막 오류 메시지 가져오기
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Utility")
     FString GetLastError() const { return LastError; }
+
+    // 상점 거래 응답 파싱 (S2C)  
+    bool ParseShopTransactionResponse(const TArray<uint8>& Data, int32& OutNewGold, FString& OutMessage, bool& bSuccess);
 
     // === 응답 성공 여부 확인 함수들 ===
 

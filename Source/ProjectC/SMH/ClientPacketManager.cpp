@@ -481,6 +481,75 @@ TArray<uint8> UClientPacketManager::CreateStoreItemsRequest(int32 ShopID)
     }
 }
 
+TArray<uint8> UClientPacketManager::CreateShopTransactionRequest(int32 UserID, int32 ItemID, int32 ItemCount, int32 TransactionType)
+{
+    ClearError();
+
+    // 입력값 검증
+    if (UserID <= 0)
+    {
+        SetError(TEXT("Invalid UserID for shop transaction"));
+        return TArray<uint8>();
+    }
+
+    if (ItemID <= 0)
+    {
+        SetError(TEXT("Invalid ItemID for shop transaction"));
+        return TArray<uint8>();
+    }
+
+    if (ItemCount <= 0)
+    {
+        SetError(TEXT("Invalid ItemCount for shop transaction"));
+        return TArray<uint8>();
+    }
+
+    if (TransactionType < 0 || TransactionType > 1)
+    {
+        SetError(TEXT("Invalid TransactionType (0: Buy, 1: Sell)"));
+        return TArray<uint8>();
+    }
+
+    try
+    {
+        flatbuffers::FlatBufferBuilder builder;
+
+        // C2S_ShopTransaction 구조체 생성
+        auto shopTransactionRequest = CreateC2S_ShopTransaction(
+            builder,
+            static_cast<uint32_t>(UserID),
+            static_cast<uint32_t>(ItemID),
+            static_cast<uint32_t>(ItemCount),
+            static_cast<uint32_t>(TransactionType)
+        );
+
+        // DatabasePacket으로 래핑
+        auto packet = CreateDatabasePacket(
+            builder,
+            EventType_C2S_ShopTransaction,
+            shopTransactionRequest.Union()
+        );
+
+        builder.Finish(packet);
+
+        // TArray<uint8>로 변환
+        TArray<uint8> PacketData;
+        uint8* bufferPointer = builder.GetBufferPointer();
+        int32 bufferSize = static_cast<int32>(builder.GetSize());
+        PacketData.Append(bufferPointer, bufferSize);
+
+        UE_LOG(LogTemp, Log, TEXT("[ClientPacketManager] CreateShopTransactionRequest: UserID %d, ItemID %d, Count %d, Type %d, Size: %d"),
+            UserID, ItemID, ItemCount, TransactionType, PacketData.Num());
+
+        return PacketData;
+    }
+    catch (const std::exception& e)
+    {
+        SetError(FString::Printf(TEXT("CreateShopTransactionRequest failed: %s"), UTF8_TO_TCHAR(e.what())));
+        return TArray<uint8>();
+    }
+}
+
 // === 서버 응답 패킷 파싱 (S2C) ===
 
 bool UClientPacketManager::ParseLoginResponse(const TArray<uint8>& Data, FAccountLoginResponse& OutResponse)
@@ -980,6 +1049,53 @@ int32 UClientPacketManager::GetClientSocket(const TArray<uint8>& Data)
 }
 
 // === 응답 성공 여부 확인 함수들 ===
+
+bool UClientPacketManager::ParseShopTransactionResponse(const TArray<uint8>& Data, int32& OutNewGold, FString& OutMessage, bool& bSuccess)
+{
+    // 출력 변수 초기화
+    OutNewGold = 0;
+    OutMessage = TEXT("");
+    bSuccess = false;
+
+    // 패킷 검증
+    if (!VerifyPacket(Data.GetData(), Data.Num()))
+    {
+        SetError(TEXT("Invalid packet format"));
+        return false;
+    }
+
+    const DatabasePacket* packet = GetDatabasePacket(Data.GetData());
+    if (!packet || packet->packet_event_type() != EventType_S2C_ShopTransaction)
+    {
+        SetError(TEXT("Invalid shop transaction response packet"));
+        return false;
+    }
+
+    const S2C_ShopTransaction* shopTransactionResponse = packet->packet_event_as_S2C_ShopTransaction();
+    if (!shopTransactionResponse)
+    {
+        SetError(TEXT("Failed to cast shop transaction response"));
+        return false;
+    }
+
+    // 응답 데이터 파싱
+    bSuccess = (shopTransactionResponse->result() == ResultCode_SUCCESS);
+    OutMessage = ConvertToFString(shopTransactionResponse->message());
+
+    if (bSuccess)
+    {
+        OutNewGold = static_cast<int32>(shopTransactionResponse->updated_gold());
+        UE_LOG(LogTemp, Log, TEXT("[ClientPacketManager] Shop Transaction Success: NewGold %d, Message: %s"),
+            OutNewGold, *OutMessage);
+    }
+    else
+    {
+        // 실패 시에도 메시지는 설정되어 있을 것
+        UE_LOG(LogTemp, Warning, TEXT("[ClientPacketManager] Shop Transaction Failed: %s"), *OutMessage);
+    }
+
+    return true;
+}
 
 bool UClientPacketManager::IsLoginSuccess(const TArray<uint8>& Data)
 {

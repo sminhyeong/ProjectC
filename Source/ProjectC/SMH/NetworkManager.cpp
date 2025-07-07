@@ -677,6 +677,116 @@ bool ANetworkManager::GetStoreItemList(int32 ShopID, TArray<FAccountItemInfo>& O
     return true;
 }
 
+bool ANetworkManager::PurchaseItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage)
+{
+    OutNewGold = 0;
+    OutMessage = TEXT("");
+
+    if (!IsConnectedToServer() || !ClientPacketManager)
+    {
+        OutMessage = TEXT("서버 연결 또는 PacketManager 오류");
+        return false;
+    }
+
+    if (UserID <= 0 || ItemID <= 0 || ItemCount <= 0)
+    {
+        OutMessage = TEXT("유효하지 않은 구매 정보입니다");
+        return false;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Attempting to purchase item: UserID %d, ItemID %d, Count %d"),
+        UserID, ItemID, ItemCount);
+
+    // 구매 요청 패킷 생성 (TransactionType = 0: 구매)
+    TArray<uint8> Packet = ClientPacketManager->CreateShopTransactionRequest(UserID, ItemID, ItemCount, 0);
+    if (Packet.Num() == 0 || !SendPacketData(Packet))
+    {
+        OutMessage = TEXT("아이템 구매 요청 실패");
+        return false;
+    }
+
+    // 응답 수신 및 파싱
+    TArray<uint8> ResponseData;
+    if (!ReceivePacketData(ResponseData, PacketTimeout))
+    {
+        OutMessage = TEXT("아이템 구매 응답 시간 초과");
+        return false;
+    }
+
+    bool bSuccess = false;
+    if (!ClientPacketManager->ParseShopTransactionResponse(ResponseData, OutNewGold, OutMessage, bSuccess))
+    {
+        OutMessage = TEXT("아이템 구매 응답 파싱 실패");
+        return false;
+    }
+
+    if (bSuccess)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Item purchase successful: NewGold %d"), OutNewGold);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Item purchase failed: %s"), *OutMessage);
+    }
+
+    return bSuccess;
+}
+
+bool ANetworkManager::SellItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage)
+{
+    OutNewGold = 0;
+    OutMessage = TEXT("");
+
+    if (!IsConnectedToServer() || !ClientPacketManager)
+    {
+        OutMessage = TEXT("서버 연결 또는 PacketManager 오류");
+        return false;
+    }
+
+    if (UserID <= 0 || ItemID <= 0 || ItemCount <= 0)
+    {
+        OutMessage = TEXT("유효하지 않은 판매 정보입니다");
+        return false;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Attempting to sell item: UserID %d, ItemID %d, Count %d"),
+        UserID, ItemID, ItemCount);
+
+    // 판매 요청 패킷 생성 (TransactionType = 1: 판매)
+    TArray<uint8> Packet = ClientPacketManager->CreateShopTransactionRequest(UserID, ItemID, ItemCount, 1);
+    if (Packet.Num() == 0 || !SendPacketData(Packet))
+    {
+        OutMessage = TEXT("아이템 판매 요청 실패");
+        return false;
+    }
+
+    // 응답 수신 및 파싱
+    TArray<uint8> ResponseData;
+    if (!ReceivePacketData(ResponseData, PacketTimeout))
+    {
+        OutMessage = TEXT("아이템 판매 응답 시간 초과");
+        return false;
+    }
+
+    bool bSuccess = false;
+    if (!ClientPacketManager->ParseShopTransactionResponse(ResponseData, OutNewGold, OutMessage, bSuccess))
+    {
+        OutMessage = TEXT("아이템 판매 응답 파싱 실패");
+        return false;
+    }
+
+    if (bSuccess)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Item sell successful: NewGold %d"), OutNewGold);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Item sell failed: %s"), *OutMessage);
+    }
+
+    return bSuccess;
+}
+
 bool ANetworkManager::GetSingleItemInfo(int32 UserID, int32 ItemID, FAccountItemInfo& OutItemInfo, FString& OutMessage)
 {
     OutItemInfo = FAccountItemInfo();
@@ -732,6 +842,67 @@ bool ANetworkManager::GetSingleItemInfo(int32 UserID, int32 ItemID, FAccountItem
         OutMessage = TEXT("아이템을 찾을 수 없습니다");
         return false;
     }
+}
+
+bool ANetworkManager::RemoveItemFromInventory(int32 UserID, int32 ItemID, int32 ItemCount, FString& OutMessage)
+{
+    OutMessage = TEXT("");
+
+    if (!IsConnectedToServer() || !ClientPacketManager)
+    {
+        OutMessage = TEXT("서버 연결 또는 PacketManager 오류");
+        return false;
+    }
+
+    if (UserID <= 0)
+    {
+        OutMessage = TEXT("유효하지 않은 사용자 ID입니다");
+        return false;
+    }
+
+    if (ItemID <= 0)
+    {
+        OutMessage = TEXT("유효하지 않은 아이템 ID입니다");
+        return false;
+    }
+
+    if (ItemCount <= 0)
+    {
+        OutMessage = TEXT("제거할 아이템 수량은 1개 이상이어야 합니다");
+        return false;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Attempting to remove item from inventory: UserID %d, ItemID %d, Count %d"),
+        UserID, ItemID, ItemCount);
+
+    // 아이템 제거 요청 패킷 생성 (RequestType = 2: 아이템 제거)
+    TArray<uint8> Packet = ClientPacketManager->CreateItemDataRequest(UserID, 2, ItemID, ItemCount);
+    if (Packet.Num() == 0 || !SendPacketData(Packet))
+    {
+        OutMessage = TEXT("아이템 제거 요청 실패");
+        return false;
+    }
+
+    // 응답 수신 및 파싱
+    TArray<uint8> ResponseData;
+    if (!ReceivePacketData(ResponseData, PacketTimeout))
+    {
+        OutMessage = TEXT("아이템 제거 응답 시간 초과");
+        return false;
+    }
+
+    // 아이템 데이터 응답 파싱 (실제로는 성공/실패만 확인)
+    TArray<FAccountItemInfo> DummyItems; // 제거 응답에서는 사용하지 않음
+    if (!ClientPacketManager->ParseItemDataResponse(ResponseData, DummyItems))
+    {
+        OutMessage = TEXT("아이템 제거 응답 파싱 실패");
+        return false;
+    }
+
+    OutMessage = FString::Printf(TEXT("인벤토리에서 아이템 제거 성공: 아이템 ID %d, 수량 %d개"), ItemID, ItemCount);
+    UE_LOG(LogTemp, Log, TEXT("Item removal successful: ItemID %d, Count %d"), ItemID, ItemCount);
+
+    return true;
 }
 
 bool ANetworkManager::IsLogin() const

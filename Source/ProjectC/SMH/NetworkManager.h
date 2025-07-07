@@ -87,9 +87,20 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Network|Shop")
     bool GetStoreItemList(int32 ShopID, TArray<struct FAccountItemInfo>& OutShopItems, FString& OutMessage);
 
+    //Store 거래 관련 함수들
+    UFUNCTION(BlueprintCallable, Category = "Network|Shop")
+    bool PurchaseItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage);
+
+    UFUNCTION(BlueprintCallable, Category = "Network|Shop")
+    bool SellItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage);
+
     //단일 아이템 정보 조회
     UFUNCTION(BlueprintCallable, Category = "Network|Item")
     bool GetSingleItemInfo(int32 UserID, int32 ItemID, FAccountItemInfo& OutItemInfo, FString& OutMessage);
+
+    //인벤토리에서 아이템 제거
+    UFUNCTION(BlueprintCallable, Category = "Network|Inventory")
+    bool RemoveItemFromInventory(int32 UserID, int32 ItemID, int32 ItemCount, FString& OutMessage);
 
     // 유저 데이터 접근 함수들
     UFUNCTION(BlueprintPure, Category = "User Data")

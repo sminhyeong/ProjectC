@@ -13,7 +13,7 @@ class UTextBlock;
 class UImage;
 
 // µ®∏Æ∞‘¿Ã∆Æ
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemClicked, int32, ServerID, bool, bHasPassword);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnItemClicked, int32, ServerID, bool, bHasPassword, int32, OwnerUserID);
 
 UCLASS()
 class PROJECTC_API UServerListItemWidget : public UUserWidget

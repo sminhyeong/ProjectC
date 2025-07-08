@@ -33,11 +33,13 @@ void UServerListWidget::NativeConstruct()
 void UServerListWidget::SetNetworkManager(ANetworkManager* NetworkMgr)
 {
     NetworkManager = NetworkMgr;
+    if(NetworkManager)
+    CurrentUserID = NetworkManager->GetCurrentUserID();
 }
 
 void UServerListWidget::SetUserID(int32 InUserID)
 {
-    CurrentUserID = InUserID;
+   
 }
 
 void UServerListWidget::RefreshServerList()
@@ -112,7 +114,7 @@ void UServerListWidget::OnCreateServerButtonClicked()
     OnCreateServerRequested.Broadcast();
 }
 
-void UServerListWidget::OnServerItemClicked(int32 ServerID, bool bHasPassword)
+void UServerListWidget::OnServerItemClicked(int32 ServerID, bool bHasPassword, int32 OwnerUserID)
 {
     if (!NetworkManager)
     {
@@ -147,11 +149,11 @@ void UServerListWidget::OnServerItemClicked(int32 ServerID, bool bHasPassword)
     int32 ServerPort;
     FString JoinMessage;
     bool bSuccess = NetworkManager->JoinGameServer(CurrentUserID, ServerID, ServerPassword, ServerIP, ServerPort, JoinMessage);
-
+    
     if (bSuccess)
     {
         UpdateStatusText(FString::Printf(TEXT("서버 접속 승인: %s:%d"), *ServerIP, ServerPort));
-        OnServerSelected.Broadcast(ServerID, ServerIP, ServerPort);
+        OnServerSelected.Broadcast(ServerID, ServerIP, ServerPort, CurrentUserID == OwnerUserID);
         if (ServerPasswordTextBox)
         {
             ServerPasswordTextBox->SetText(FText::GetEmpty());

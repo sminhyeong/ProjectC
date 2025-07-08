@@ -102,5 +102,5 @@ void UServerListItemWidget::OnServerButtonClicked()
     UE_LOG(LogTemp, Log, TEXT("Server item clicked: %s (ID: %d)"),
         *CurrentServerInfo.ServerName, CurrentServerInfo.ServerID);
 
-    OnItemClicked.Broadcast(CurrentServerInfo.ServerID, CurrentServerInfo.bHasPassword);
+    OnItemClicked.Broadcast(CurrentServerInfo.ServerID, CurrentServerInfo.bHasPassword, CurrentServerInfo.OwnerUserID);
 }

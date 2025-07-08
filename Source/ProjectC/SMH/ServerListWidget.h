@@ -14,7 +14,7 @@ class UTextBlock;
 class UEditableTextBox;
 
 // 델리게이트
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnServerSelected, int32, ServerID, const FString&, ServerIP, int32, ServerPort);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnServerSelected, int32, ServerID, const FString&, ServerIP, int32, ServerPort, bool , IsOwnning);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCreateServerRequested);
 
 UCLASS()
@@ -77,7 +77,7 @@ protected:
 
     // 서버 아이템 이벤트
     UFUNCTION()
-    void OnServerItemClicked(int32 ServerID, bool bHasPassword);
+    void OnServerItemClicked(int32 ServerID, bool bHasPassword, int32 OwnerUserIz);
 
     // UI 업데이트
     void UpdateStatusText(const FString& Message, bool bIsError = false);

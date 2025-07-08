@@ -18,6 +18,10 @@ UCLASS()
 class PROJECTC_API UInventorySlotWidget : public UUserWidget, public IUserObjectListEntry
 {
 	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void SetSlotData(FRPGItemData SlotItem);
 	
 public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))

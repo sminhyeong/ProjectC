@@ -17,11 +17,8 @@ void UInventoryWidget::UpdateItemList(const TArray<FRPGItemData> ItemList)
 		UInventorySlotWidget* NewItemSlot = CreateWidget<UInventorySlotWidget>(this, InventorySlotWidgetClass);
 		if (NewItemSlot)
 		{
-			NewItemSlot->ItemData = item;
-			NewItemSlot->Image_Item->SetBrushFromTexture(item.ItemInfo.Texture);
-			NewItemSlot->Text_ItemNumber->SetText(FText::AsNumber(item.Number));
+			NewItemSlot->SetSlotData(item);
 			TileView_Items->AddItem(NewItemSlot);
-			
 		}
 	}
 	if (ItemList.Num() > 0)

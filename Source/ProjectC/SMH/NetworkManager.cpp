@@ -5,8 +5,9 @@
 #endif
 
 #include "NetworkManager.h"
-#include "Engine/Engine.h"
 #include "SocketSubsystem.h"
+#include "IPAddress.h"
+#include "Engine/Engine.h"
 #include "Common/TcpSocketBuilder.h"
 
 
@@ -1386,7 +1387,7 @@ bool ANetworkManager::CreateServerAddress(const FString& IP, int32 Port, TShared
 	{
 		FIPv4Endpoint ServerEndpoint(IPv4Address, static_cast<uint16>(Port));
 		OutAddress = ServerEndpoint.ToInternetAddr();
-		UE_LOG(LogTemp, Log, TEXT("Address created using IPv4Endpoint: %s:%d"), *IP, Port);
+		UE_LOG(LogTemp, Warning, TEXT("Address created using IPv4Endpoint: %s:%d"), *IP, Port);
 		return true;
 	}
 
@@ -1407,57 +1408,52 @@ bool ANetworkManager::CreateServerAddress(const FString& IP, int32 Port, TShared
 	// 방법 3: 도메인 주소 해석
 	if (!IP.IsEmpty())
 	{
-		//FResolveInfo* ResolveInfo = SocketSubsystem->GetHostByName(TCHAR_TO_ANSI(*CleanIP));
-		//if (ResolveInfo)
-		//{
-		//	// 해석 완료까지 대기 (타임아웃 추가)
-		//	int32 TimeoutCounter = 0;
-		//	const int32 MaxTimeout = 300; // 3초 타임아웃 (0.01초 * 300)
+		UE_LOG(LogTemp, Warning, TEXT("Attempting DNS resolution for: %s"), *CleanIP);
 
-		//	while (!ResolveInfo->IsComplete() && TimeoutCounter < MaxTimeout)
-		//	{
-		//		FPlatformProcess::Sleep(0.01f);
-		//		TimeoutCounter++;
-		//	}
+		TSharedRef<FInternetAddr> TempAddr = SocketSubsystem->CreateInternetAddr();
+		ESocketErrors Result = SocketSubsystem->GetHostByName(
+			TCHAR_TO_ANSI(*CleanIP),
+			*TempAddr
+		);
 
-		//	if (ResolveInfo->IsComplete())
-		//	{
-		//		int32 ErrorCode = ResolveInfo->GetErrorCode();
-		//		if (ErrorCode == 0)
-		//		{
-		//			const TArray<TSharedPtr<FInternetAddr>>& Addresses = ResolveInfo->GetResolvedAddressArray();
-		//			if (Addresses.Num() > 0 && Addresses[0].IsValid())
-		//			{
-		//				// 첫 번째 해석된 주소 사용
-		//				TSharedPtr<FInternetAddr> ResolvedAddr = Addresses[0];
-		//				ResolvedAddr->SetPort(Port);
-		//				OutAddress = ResolvedAddr.ToSharedRef();
+		UE_LOG(LogTemp, Warning, TEXT("DNS Result: %d"), (int32)Result);
+		UE_LOG(LogTemp, Warning, TEXT("Resolved address before SetPort: %s"), *TempAddr->ToString(true));
 
-		//				UE_LOG(LogTemp, Log, TEXT("Domain %s resolved to %s:%d"),
-		//					*CleanIP, *ResolvedAddr->ToString(false), Port);
+		if (Result == SE_NO_ERROR)
+		{
+			// 포트 설정 전 주소 확인
+			FString ResolvedIP = TempAddr->ToString(false);
+			UE_LOG(LogTemp, Warning, TEXT("✓ DNS resolved %s to IP: %s"), *CleanIP, *ResolvedIP);
 
-		//				// 정리
-		//				//SocketSubsystem->DestroyResolveInfo(ResolveInfo);
-		//				return true;
-		//			}
-		//		}
-		//		else
-		//		{
-		//			UE_LOG(LogTemp, Error, TEXT("DNS resolution failed for %s (Error: %d)"), *CleanIP, ErrorCode);
-		//		}
-		//	}
-		//	else
-		//	{
-		//		UE_LOG(LogTemp, Error, TEXT("DNS resolution timeout for: %s"), *CleanIP);
-		//	}
+			TempAddr->SetPort(Port);
+			OutAddress = TempAddr;
 
-		//	// 정리
-		//	//SocketSubsystem->DestroyResolveInfo(ResolveInfo);
-		//}
-		//else
-		//{
-		//	UE_LOG(LogTemp, Error, TEXT("GetHostByName returned null for: %s"), *CleanIP);
-		//}
+			UE_LOG(LogTemp, Warning, TEXT("✓ Final domain address: %s"), *OutAddress->ToString(true));
+			return true;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("✗ DNS resolution failed for %s (Error: %d)"),
+				*CleanIP, (int32)Result);
+
+			// 추가 디버깅: 다른 방법으로도 시도
+			UE_LOG(LogTemp, Warning, TEXT("Trying alternative method..."));
+			TSharedRef<FInternetAddr> AltAddr = SocketSubsystem->CreateInternetAddr();
+			bool bIsValid = false;
+			AltAddr->SetIp(*CleanIP, bIsValid);
+
+			if (bIsValid)
+			{
+				AltAddr->SetPort(Port);
+				OutAddress = AltAddr;
+				UE_LOG(LogTemp, Log, TEXT("✓ Alternative method succeeded: %s"), *OutAddress->ToString(true));
+				return true;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("✗ Alternative method also failed"));
+			}
+		}
 	}
 	// 실패 시
 

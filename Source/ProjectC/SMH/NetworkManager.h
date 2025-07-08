@@ -102,6 +102,14 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Network|Inventory")
     bool RemoveItemFromInventory(int32 UserID, int32 ItemID, int32 ItemCount, FString& OutMessage);
 
+    //인벤토리의 아이템 갯수 추가
+    UFUNCTION(BlueprintCallable, Category = "Network|Item")
+    bool AddItemToInventory(int32 UserID, int32 ItemID, int32 ItemCount, FString& OutMessage);
+
+    // 아이템 수량 직접 설정
+    UFUNCTION(BlueprintCallable, Category = "Network|Item")
+    bool SetItemQuantity(int32 UserID, int32 ItemID, int32 NewQuantity, FString& OutMessage);
+
     // 유저 데이터 접근 함수들
     UFUNCTION(BlueprintPure, Category = "User Data")
     bool IsLogin() const;

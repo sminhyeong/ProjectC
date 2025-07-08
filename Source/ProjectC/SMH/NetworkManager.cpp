@@ -12,49 +12,43 @@
 
 
 
-ANetworkManager::ANetworkManager()
+UNetworkManager::UNetworkManager()  // ANetworkManager에서 UNetworkManager로 변경
 {
-	// Tick 비활성화 - 더 이상 필요 없음
-	PrimaryActorTick.bCanEverTick = false;
-
 	// 기본값 설정
 	DefaultServerIP = TEXT("127.0.0.1");
 	DefaultServerPort = 8080;
-	ReconnectInterval = 0.1f; // 0.1초마다 재연결 시도
-	PacketTimeout = 5.0f; // 5초 패킷 응답 대기
+	ReconnectInterval = 0.1f;
+	PacketTimeout = 5.0f;
 
 	// 초기 상태
 	ClientSocket = nullptr;
 	ConnectionState = ENetConnectionState::Disconnected;
 	CurrentServerIP = TEXT("");
 	CurrentServerPort = 0;
-	// ClientPacketManager 생성
-	ClientPacketManager = CreateDefaultSubobject<UClientPacketManager>(TEXT("ClientPacketManager"));
+
 	// 수신 버퍼 초기화
 	ReceiveBuffer.Reserve(RECEIVE_BUFFER_SIZE);
 }
-
-void ANetworkManager::BeginPlay()
+UNetworkManager::~UNetworkManager()
 {
-	Super::BeginPlay();
-	UE_LOG(LogTemp, Log, TEXT("NetworkManager BeginPlay"));
+	DisconnectFromServer();  // 소켓 정리
 }
-
-void ANetworkManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
+// 또는 GameInstance Shutdown에서 호출
+void UNetworkManager::Cleanup()
 {
 	StopReconnectTimer();
 	DisconnectFromServer();
-	Super::EndPlay(EndPlayReason);
 }
 
-void ANetworkManager::Destroyed()
+void UNetworkManager::InitClientPacketManager()
 {
-	StopReconnectTimer();
-	CleanupSocket();
-	Super::Destroyed();
+	if (!ClientPacketManager)
+	{
+		ClientPacketManager = NewObject<UClientPacketManager>(this);
+	}
 }
 
-void ANetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
+void UNetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
 {
 	UE_LOG(LogTemp, Log, TEXT("Attempting to connect to server: %s:%d"), *ServerIP, ServerPort);
 
@@ -105,7 +99,7 @@ void ANetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
 					if (GetWorld())
 					{
 						GetWorld()->GetTimerManager().SetTimer(
-							ReconnectTimerHandle, this, &ANetworkManager::TryReconnect, 0.1f, true);
+							ReconnectTimerHandle, this, &UNetworkManager::TryReconnect, 0.1f, true);
 					}
 				}
 			}
@@ -120,7 +114,7 @@ void ANetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
 					GetWorld()->GetTimerManager().SetTimer(
 						ReconnectTimerHandle,
 						this,
-						&ANetworkManager::TryReconnect, // 기존 함수를 상태 체크용으로 재활용
+						&UNetworkManager::TryReconnect, // 기존 함수를 상태 체크용으로 재활용
 						0.1f,  // 100ms마다 체크
 						true   // 반복
 					);
@@ -141,7 +135,7 @@ void ANetworkManager::ConnectToServer(const FString& ServerIP, int32 ServerPort)
 	}
 }
 
-void ANetworkManager::DisconnectFromServer()
+void UNetworkManager::DisconnectFromServer()
 {
 	if (ClientSocket)
 	{
@@ -152,17 +146,17 @@ void ANetworkManager::DisconnectFromServer()
 	}
 }
 
-bool ANetworkManager::IsConnectedToServer() const
+bool UNetworkManager::IsConnectedToServer() const
 {
 	return ConnectionState == ENetConnectionState::Connected && ClientSocket != nullptr;
 }
 
-ENetConnectionState ANetworkManager::GetConnectionState() const
+ENetConnectionState UNetworkManager::GetConnectionState() const
 {
 	return ConnectionState;
 }
 
-bool ANetworkManager::LoginToServer(const FString& Username, const FString& Password, FString& OutMessage)
+bool UNetworkManager::LoginToServer(const FString& Username, const FString& Password, FString& OutMessage)
 {
 	// 기존 유저 데이터 초기화
 	ClearUserData();
@@ -235,7 +229,7 @@ bool ANetworkManager::LoginToServer(const FString& Username, const FString& Pass
 	return CurrentUserData.bSuccess;
 }
 
-bool ANetworkManager::LogoutFromServer(FString& OutMessage)
+bool UNetworkManager::LogoutFromServer(FString& OutMessage)
 {
 	if (!IsConnectedToServer())
 	{
@@ -300,7 +294,7 @@ bool ANetworkManager::LogoutFromServer(FString& OutMessage)
 	return true;
 }
 
-bool ANetworkManager::CreateAccountToServer(const FString& Username, const FString& Password, const FString& Nickname, int32& OutUserID, FString& OutMessage)
+bool UNetworkManager::CreateAccountToServer(const FString& Username, const FString& Password, const FString& Nickname, int32& OutUserID, FString& OutMessage)
 {
 	// 초기화
 	OutUserID = 0;
@@ -369,7 +363,7 @@ bool ANetworkManager::CreateAccountToServer(const FString& Username, const FStri
 	return bSuccess;
 }
 
-bool ANetworkManager::CreateGameServer(int32 UserID, const FString& ServerName, const FString& ServerPassword, const FString& ServerIP, int32 ServerPort, int32 MaxPlayers, int32& OutServerID, FString& OutMessage)
+bool UNetworkManager::CreateGameServer(int32 UserID, const FString& ServerName, const FString& ServerPassword, const FString& ServerIP, int32 ServerPort, int32 MaxPlayers, int32& OutServerID, FString& OutMessage)
 {
 	// 초기화
 	OutServerID = 0;
@@ -439,7 +433,7 @@ bool ANetworkManager::CreateGameServer(int32 UserID, const FString& ServerName, 
 	return bSuccess;
 }
 
-bool ANetworkManager::GetGameServerList(TArray<FAccountGameServerInfo>& OutServerList)
+bool UNetworkManager::GetGameServerList(TArray<FAccountGameServerInfo>& OutServerList)
 {
 	// 초기화
 	OutServerList.Empty();
@@ -491,7 +485,7 @@ bool ANetworkManager::GetGameServerList(TArray<FAccountGameServerInfo>& OutServe
 	return true;
 }
 
-bool ANetworkManager::JoinGameServer(int32 UserID, int32 ServerID, const FString& ServerPassword, FString& OutServerIP, int32& OutServerPort, FString& OutMessage)
+bool UNetworkManager::JoinGameServer(int32 UserID, int32 ServerID, const FString& ServerPassword, FString& OutServerIP, int32& OutServerPort, FString& OutMessage)
 {
 	// 초기화
 	OutServerIP = TEXT("");
@@ -563,7 +557,7 @@ bool ANetworkManager::JoinGameServer(int32 UserID, int32 ServerID, const FString
 	return bSuccess;
 }
 
-bool ANetworkManager::GetPlayerData(int32 UserID, FAccountPlayerData& OutPlayerData, FString& OutMessage)
+bool UNetworkManager::GetPlayerData(int32 UserID, FAccountPlayerData& OutPlayerData, FString& OutMessage)
 {
 	OutPlayerData = FAccountPlayerData();
 	OutMessage = TEXT("");
@@ -601,7 +595,7 @@ bool ANetworkManager::GetPlayerData(int32 UserID, FAccountPlayerData& OutPlayerD
 	return true;
 }
 
-bool ANetworkManager::GetPlayerInventory(int32 UserID, TArray<FAccountItemInfo>& OutInventoryItems, FString& OutMessage)
+bool UNetworkManager::GetPlayerInventory(int32 UserID, TArray<FAccountItemInfo>& OutInventoryItems, FString& OutMessage)
 {
 	OutInventoryItems.Empty();
 	OutMessage = TEXT("");
@@ -638,7 +632,7 @@ bool ANetworkManager::GetPlayerInventory(int32 UserID, TArray<FAccountItemInfo>&
 	return true;
 }
 
-bool ANetworkManager::GetStoreItemList(int32 ShopID, TArray<FAccountItemInfo>& OutShopItems, FString& OutMessage)
+bool UNetworkManager::GetStoreItemList(int32 ShopID, TArray<FAccountItemInfo>& OutShopItems, FString& OutMessage)
 {
 	OutShopItems.Empty();
 	OutMessage = TEXT("");
@@ -675,7 +669,7 @@ bool ANetworkManager::GetStoreItemList(int32 ShopID, TArray<FAccountItemInfo>& O
 	return true;
 }
 
-bool ANetworkManager::PurchaseItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage)
+bool UNetworkManager::PurchaseItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage)
 {
 	OutNewGold = 0;
 	OutMessage = TEXT("");
@@ -730,7 +724,7 @@ bool ANetworkManager::PurchaseItem(int32 UserID, int32 ItemID, int32 ItemCount, 
 	return bSuccess;
 }
 
-bool ANetworkManager::SellItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage)
+bool UNetworkManager::SellItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage)
 {
 	OutNewGold = 0;
 	OutMessage = TEXT("");
@@ -785,7 +779,7 @@ bool ANetworkManager::SellItem(int32 UserID, int32 ItemID, int32 ItemCount, int3
 	return bSuccess;
 }
 
-bool ANetworkManager::GetSingleItemInfo(int32 UserID, int32 ItemID, FAccountItemInfo& OutItemInfo, FString& OutMessage)
+bool UNetworkManager::GetSingleItemInfo(int32 UserID, int32 ItemID, FAccountItemInfo& OutItemInfo, FString& OutMessage)
 {
 	OutItemInfo = FAccountItemInfo();
 	OutMessage = TEXT("");
@@ -842,7 +836,7 @@ bool ANetworkManager::GetSingleItemInfo(int32 UserID, int32 ItemID, FAccountItem
 	}
 }
 
-bool ANetworkManager::RemoveItemFromInventory(int32 UserID, int32 ItemID, int32 ItemCount, FString& OutMessage)
+bool UNetworkManager::RemoveItemFromInventory(int32 UserID, int32 ItemID, int32 ItemCount, FString& OutMessage)
 {
 	OutMessage = TEXT("");
 
@@ -903,7 +897,7 @@ bool ANetworkManager::RemoveItemFromInventory(int32 UserID, int32 ItemID, int32 
 	return true;
 }
 
-bool ANetworkManager::AddItemToInventory(int32 UserID, int32 ItemID, int32 ItemCount, FString& OutMessage)
+bool UNetworkManager::AddItemToInventory(int32 UserID, int32 ItemID, int32 ItemCount, FString& OutMessage)
 {
 	OutMessage = TEXT("");
 
@@ -962,7 +956,7 @@ bool ANetworkManager::AddItemToInventory(int32 UserID, int32 ItemID, int32 ItemC
 	return true;
 }
 
-bool ANetworkManager::SetItemQuantity(int32 UserID, int32 ItemID, int32 NewQuantity, FString& OutMessage)
+bool UNetworkManager::SetItemQuantity(int32 UserID, int32 ItemID, int32 NewQuantity, FString& OutMessage)
 {
 	OutMessage = TEXT("");
 
@@ -1070,43 +1064,43 @@ bool ANetworkManager::SetItemQuantity(int32 UserID, int32 ItemID, int32 NewQuant
 	return true;
 }
 
-bool ANetworkManager::IsLogin() const
+bool UNetworkManager::IsLogin() const
 {
 	return CurrentUserData.bSuccess;
 }
 
-int32 ANetworkManager::GetCurrentUserID() const
+int32 UNetworkManager::GetCurrentUserID() const
 {
 	return CurrentUserData.UserID;
 }
 
-FString ANetworkManager::GetCurrentUsername() const
+FString UNetworkManager::GetCurrentUsername() const
 {
 	return CurrentUserData.Username;
 }
 
-FString ANetworkManager::GetCurrentNickname() const
+FString UNetworkManager::GetCurrentNickname() const
 {
 	return CurrentUserData.Nickname;
 }
 
-int32 ANetworkManager::GetCurrentLevel() const
+int32 UNetworkManager::GetCurrentLevel() const
 {
 	return CurrentUserData.Level;
 }
 
-FAccountLoginResponse ANetworkManager::GetCurrentUserData() const
+FAccountLoginResponse UNetworkManager::GetCurrentUserData() const
 {
 	return CurrentUserData;
 }
 
-void ANetworkManager::ClearUserData()
+void UNetworkManager::ClearUserData()
 {
 	CurrentUserData = FAccountLoginResponse(); // 구조체 기본값으로 초기화
 	UE_LOG(LogTemp, Log, TEXT("User data cleared"));
 }
 
-void ANetworkManager::SetConnectionState(ENetConnectionState NewState)
+void UNetworkManager::SetConnectionState(ENetConnectionState NewState)
 {
 	if (ConnectionState != NewState)
 	{
@@ -1117,35 +1111,43 @@ void ANetworkManager::SetConnectionState(ENetConnectionState NewState)
 	}
 }
 
-void ANetworkManager::StartReconnectTimer()
+void UNetworkManager::StartReconnectTimer()
 {
-	if (GetWorld())
-	{
-		// 재연결 간격을 더 자주 체크하도록 수정 (상태 체크용으로도 사용)
-		float CheckInterval = (ConnectionState == ENetConnectionState::Connecting) ? 0.1f : ReconnectInterval;
-
-		GetWorld()->GetTimerManager().SetTimer(
-			ReconnectTimerHandle,
-			this,
-			&ANetworkManager::TryReconnect,
-			CheckInterval,
-			true // 반복
-		);
-
-		UE_LOG(LogTemp, Log, TEXT("Timer started (%.1f seconds interval)"), CheckInterval);
-	}
+	UWorld* World = GetWorld();
+    if (World)
+    {
+        FTimerManager& TimerManager = World->GetTimerManager();
+        
+        // 이미 타이머가 활성화되어 있으면 클리어
+        if (TimerManager.IsTimerActive(ReconnectTimerHandle))
+        {
+            TimerManager.ClearTimer(ReconnectTimerHandle);
+        }
+        
+        float CheckInterval = (ConnectionState == ENetConnectionState::Connecting) ? 
+            ReconnectInterval : ReconnectInterval * 2.0f;
+            
+        TimerManager.SetTimer(
+            ReconnectTimerHandle,
+            this,
+            &UNetworkManager::TryReconnect,
+            CheckInterval,
+            true
+        );
+    }
 }
 
-void ANetworkManager::StopReconnectTimer()
+void UNetworkManager::StopReconnectTimer()
 {
-	if (GetWorld() && ReconnectTimerHandle.IsValid())
+	UWorld* World = GetWorld();
+	if (World && World->GetTimerManager().IsTimerActive(ReconnectTimerHandle))
 	{
 		GetWorld()->GetTimerManager().ClearTimer(ReconnectTimerHandle);
 		UE_LOG(LogTemp, Log, TEXT("Reconnect timer stopped"));
 	}
 }
 
-void ANetworkManager::TryReconnect()
+void UNetworkManager::TryReconnect()
 {
 	// 현재 연결 상태가 Connecting인 경우 - 연결 진행 상태 체크
 	if (ConnectionState == ENetConnectionState::Connecting && ClientSocket)
@@ -1216,7 +1218,7 @@ void ANetworkManager::TryReconnect()
 	}
 }
 
-bool ANetworkManager::CreateSocket()
+bool UNetworkManager::CreateSocket()
 {
 	ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
 
@@ -1249,7 +1251,7 @@ bool ANetworkManager::CreateSocket()
 	return true;
 }
 
-void ANetworkManager::CleanupSocket()
+void UNetworkManager::CleanupSocket()
 {
 	if (ClientSocket)
 	{
@@ -1260,7 +1262,7 @@ void ANetworkManager::CleanupSocket()
 	}
 }
 
-bool ANetworkManager::SendPacketData(const TArray<uint8>& PacketData)
+bool UNetworkManager::SendPacketData(const TArray<uint8>& PacketData)
 {
 	if (!ClientSocket || !IsConnectedToServer())
 	{
@@ -1292,7 +1294,7 @@ bool ANetworkManager::SendPacketData(const TArray<uint8>& PacketData)
 	}
 }
 
-bool ANetworkManager::ReceivePacketData(TArray<uint8>& OutPacketData, float TimeoutSeconds)
+bool UNetworkManager::ReceivePacketData(TArray<uint8>& OutPacketData, float TimeoutSeconds)
 {
 	if (!ClientSocket || !IsConnectedToServer())
 	{
@@ -1372,7 +1374,7 @@ bool ANetworkManager::ReceivePacketData(TArray<uint8>& OutPacketData, float Time
 	return true;
 }
 
-bool ANetworkManager::CreateServerAddress(const FString& IP, int32 Port, TSharedRef<FInternetAddr>& OutAddress)
+bool UNetworkManager::CreateServerAddress(const FString& IP, int32 Port, TSharedRef<FInternetAddr>& OutAddress)
 {
 	ISocketSubsystem* SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
 	if (!SocketSubsystem)

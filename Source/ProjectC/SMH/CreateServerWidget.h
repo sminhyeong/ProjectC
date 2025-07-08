@@ -8,7 +8,7 @@
 
 
 // 전방 선언
-class ANetworkManager;
+class UNetworkManager;
 class UEditableTextBox;
 class UButton;
 class UTextBlock;
@@ -19,9 +19,10 @@ class UCheckBox;
  * 
  */
  // 델리게이트
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnServerCreated,
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnServerCreated,
     bool, bSuccess,          
-    int32, ServerID,         
+    int32, ServerID,
+    int32, ServerPort,
     const FString&, Message
 );
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCreateCancelled);
@@ -70,7 +71,7 @@ public:
 
     // 공개 함수들
     UFUNCTION(BlueprintCallable)
-    void SetNetworkManager(ANetworkManager* NetworkMgr);
+    void SetNetworkManager(UNetworkManager* NetworkMgr);
 
     UFUNCTION(BlueprintCallable)
     void SetUserID(int32 InUserID);
@@ -95,7 +96,7 @@ protected:
 
 private:
     UPROPERTY()
-    TObjectPtr<ANetworkManager> NetworkManager;
+    TObjectPtr<UNetworkManager> NetworkManager;
 
     int32 CurrentUserID;	
 };

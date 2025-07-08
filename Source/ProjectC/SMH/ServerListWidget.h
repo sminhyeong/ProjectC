@@ -6,7 +6,7 @@
 #include "ServerListWidget.generated.h"
 
 // 전방 선언
-class ANetworkManager;
+class UNetworkManager;
 class UServerListItemWidget;
 class UScrollBox;
 class UButton;
@@ -24,7 +24,7 @@ class PROJECTC_API UServerListWidget : public UUserWidget
 
 public:
     virtual void NativeConstruct() override;
-
+    
     // 위젯 바인딩
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UScrollBox> ServerScrollBox;
@@ -56,7 +56,7 @@ public:
 
     // 공개 함수들
     UFUNCTION(BlueprintCallable)
-    void SetNetworkManager(ANetworkManager* NetworkMgr);
+    void SetNetworkManager(UNetworkManager* NetworkMgr);
 
     UFUNCTION(BlueprintCallable)
     void SetUserID(int32 InUserID);
@@ -85,7 +85,7 @@ protected:
 
 private:
     UPROPERTY()
-    TObjectPtr<ANetworkManager> NetworkManager;
+    TObjectPtr<UNetworkManager> NetworkManager;
 
     int32 CurrentUserID;
     bool bShowingMyServers;

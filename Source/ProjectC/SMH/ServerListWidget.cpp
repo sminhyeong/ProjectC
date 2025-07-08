@@ -30,7 +30,7 @@ void UServerListWidget::NativeConstruct()
     UpdateStatusText(TEXT("서버 목록을 불러오려면 새로고침을 클릭하세요."));
 }
 
-void UServerListWidget::SetNetworkManager(ANetworkManager* NetworkMgr)
+void UServerListWidget::SetNetworkManager(UNetworkManager* NetworkMgr)
 {
     NetworkManager = NetworkMgr;
     if(NetworkManager)

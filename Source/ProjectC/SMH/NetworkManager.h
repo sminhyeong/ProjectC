@@ -26,19 +26,22 @@ enum class ENetConnectionState : uint8
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnConnectionStateChanged, ENetConnectionState, NewState);
 
 UCLASS(BlueprintType, Blueprintable)
-class PROJECTC_API ANetworkManager : public AActor
+class PROJECTC_API UNetworkManager : public UObject
 {
     GENERATED_BODY()
 
 public:
-    ANetworkManager();
-
+    UNetworkManager();
+    ~UNetworkManager();
+    void Cleanup();
 protected:
-    virtual void BeginPlay() override;
-    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-    virtual void Destroyed() override;
+
 
 public:
+
+    UFUNCTION(BlueprintCallable, Category = "Network")
+    void InitClientPacketManager();
+
     // 서버 연결 관련 함수들
     UFUNCTION(BlueprintCallable, Category = "Network")
     void ConnectToServer(const FString& ServerIP, int32 ServerPort);

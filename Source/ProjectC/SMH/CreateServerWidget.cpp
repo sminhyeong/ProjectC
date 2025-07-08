@@ -56,7 +56,7 @@ void UCreateServerWidget::NativeConstruct()
 	ResetForm();
 }
 
-void UCreateServerWidget::SetNetworkManager(ANetworkManager* NetworkMgr)
+void UCreateServerWidget::SetNetworkManager(UNetworkManager* NetworkMgr)
 {
 	NetworkManager = NetworkMgr;
 }
@@ -143,7 +143,7 @@ void UCreateServerWidget::OnCreateButtonClicked()
 	{
 		UpdateStatusText(FString::Printf(TEXT("서버 생성 실패: %s"), *CreateMessage), true);
 	}
-	OnServerCreated.Broadcast(bSuccess, NewServerID, CreateMessage);
+	OnServerCreated.Broadcast(bSuccess, NewServerID,  ServerPort, CreateMessage);
 }
 
 void UCreateServerWidget::OnCancelButtonClicked()

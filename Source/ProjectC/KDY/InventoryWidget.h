@@ -19,7 +19,7 @@ class PROJECTC_API UInventoryWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	void UpdateItemList(const TArray<FRPGItemData> ItemList);
 
 public:

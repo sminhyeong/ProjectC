@@ -83,7 +83,6 @@ float UCharacterStateComponent::UseMP(float Amount)
 {
 	if (Amount <= 0.f || CurMP <= 0.f)
 	{
-		Skill = DamageType;
 		CurMP -= Amount;
 		CurMP = FMath::Min(CurMP, MaxMP);
 	}

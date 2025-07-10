@@ -54,12 +54,12 @@ bool AInventoryManager::TryAddItem(int32 NewItemID, int32 NewItemCount)
 			// 아이템 추가
 			if (NetworkManager->AddItemToInventory(UserData.UserID, NewItemID, NewItemCount, OutMessage))
 			{
-				//// 인벤토리 위젯을 위한 정보 갱신
-				//UpdateInventoryList();
-				//if (NewItemCategory == InventoryWidget->NowWatchCategory)
-				//{
-					UpdateInventoryWidget();
-				//}
+				// 인벤토리 정보 갱신
+				UpdateInventoryData();
+				if (NewItemCategory == InventoryWidget->NowWatchCategory)
+				{
+					S2C_UpdateInventoryWidget();
+				}
 				return true;
 			}
 			else
@@ -102,17 +102,53 @@ bool AInventoryManager::CheckInventoryHasSpace(EItemCategory ItemCategory)
 	}
 }
 
-void AInventoryManager::UpdateInventoryList()
+void AInventoryManager::UpdateInventoryData()
+{
+	S2C_ParseInventoryData(GetInventoryDataToDB());
+}
+
+void AInventoryManager::S2C_UpdateInventoryWidget_Implementation()
+{
+	switch (InventoryWidget->NowWatchCategory)
+	{
+		case EItemCategory::WEAPON:
+		{
+			InventoryWidget->UpdateItemList(WeaponList);
+			break;
+		}
+		case EItemCategory::ARMOR:
+		{
+			InventoryWidget->UpdateItemList(ArmorList);
+			break;
+		}
+		case EItemCategory::CONSUME:
+		{
+			InventoryWidget->UpdateItemList(ConsumeList);
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
+}
+
+void AInventoryManager::InventoryIsFull_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Inventory is Full"));
+}
+
+TArray<FAccountItemInfo> AInventoryManager::GetInventoryDataToDB()
 {
 	UNetGameInstanceBase* NetGameInstance = Cast<UNetGameInstanceBase>(GetGameInstance());
 	if (!NetGameInstance)
 	{
-		return;
+		return TArray<FAccountItemInfo>();
 	}
 	UNetworkManager* NetworkManager = NetGameInstance->GetNetworkManager();
 	if (!NetworkManager)
 	{
-		return;
+		return TArray<FAccountItemInfo>();
 	}
 	FAccountLoginResponse UserData = NetworkManager->GetCurrentUserData();
 
@@ -122,9 +158,13 @@ void AInventoryManager::UpdateInventoryList()
 	if (!NetworkManager->GetPlayerInventory(UserData.UserID, InventoryItems, OutMessage))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s"), *OutMessage);
-		return;
+		return TArray<FAccountItemInfo>();
 	}
+	return InventoryItems;
+}
 
+void AInventoryManager::S2C_ParseInventoryData_Implementation(const TArray<FAccountItemInfo>& InventoryItems)
+{
 	// ItemArtInfo 정보 불러오기
 	if (!DT_ItemArtInfo)
 	{
@@ -148,58 +188,26 @@ void AInventoryManager::UpdateInventoryList()
 
 		switch (ItemStruct::ConvertTypeToCategory(item.ItemType))
 		{
-			case EItemCategory::WEAPON:
-			{
-				WeaponList.Add(AllItemData);
-				break;
-			}
-			case EItemCategory::ARMOR:
-			{
-				ArmorList.Add(AllItemData);
-				break;
-			}
-			case EItemCategory::CONSUME:
-			{
-				ConsumeList.Add(AllItemData);
-				break;
-			}
-			default:
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Wrong Category"));
-				break;
-			}
+		case EItemCategory::WEAPON:
+		{
+			WeaponList.Add(AllItemData);
+			break;
+		}
+		case EItemCategory::ARMOR:
+		{
+			ArmorList.Add(AllItemData);
+			break;
+		}
+		case EItemCategory::CONSUME:
+		{
+			ConsumeList.Add(AllItemData);
+			break;
+		}
+		default:
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Wrong Category"));
+			break;
+		}
 		}
 	}
 }
-
-void AInventoryManager::UpdateInventoryWidget()
-{
-	if (false) return;
-
-	switch (InventoryWidget->NowWatchCategory)
-	{
-	case EItemCategory::WEAPON:
-	{
-		InventoryWidget->UpdateItemList(WeaponList);
-		break;
-	}
-	case EItemCategory::ARMOR:
-	{
-		InventoryWidget->UpdateItemList(ArmorList);
-		break;
-	}
-	case EItemCategory::CONSUME:
-	{
-		InventoryWidget->UpdateItemList(ConsumeList);
-		break;
-	}
-	default:
-		break;
-	}
-}
-
-void AInventoryManager::InventoryIsFull_Implementation()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Inventory is Full"));
-}
-

@@ -9,6 +9,7 @@
 
 class AItemBase;
 class UInventoryWidget;
+class UNetworkManager;
 
 UCLASS()
 class PROJECTC_API AInventoryManager : public AActor
@@ -50,6 +51,9 @@ public:
 	void InventoryIsFull();
 	void InventoryIsFull_Implementation();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	UNetworkManager* GetNetworkManager_Inventory();
+
 private:
 	// DB로부터 정보를 받아와서 InventoryManager로 가져오는 함수
 	UFUNCTION()
@@ -72,6 +76,9 @@ private:
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInventoryWidget> InventoryWindowWidget;
+
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UNetworkManager> NetworkManager;
 
 	UPROPERTY(EditAnywhere)
 	int32 MaxItemPerCategory{ 20 };

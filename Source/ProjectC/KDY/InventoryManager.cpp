@@ -5,6 +5,8 @@
 #include "InventoryWidget.h"
 #include "../SMH/NetGameInstanceBase.h"
 #include "../SMH/NetworkManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameStateBase.h"
 
 // Sets default values
 AInventoryManager::AInventoryManager()
@@ -30,12 +32,8 @@ void AInventoryManager::Tick(float DeltaTime)
 
 bool AInventoryManager::TryAddItem(int32 NewItemID, int32 NewItemCount)
 {
-	UNetGameInstanceBase* NetGameInstance = Cast<UNetGameInstanceBase>(GetGameInstance());
-	if (!NetGameInstance)
-	{
-		return false;
-	}
-	UNetworkManager* NetworkManager = NetGameInstance->GetNetworkManager();
+	// TObjectPtr<AGameModeBase> GM = UGameplayStatics::GetGameState(GetWorld())->AuthorityGameMode;
+	NetworkManager = GetNetworkManager_Inventory();
 	if (!NetworkManager)
 	{
 		return false;
@@ -84,12 +82,7 @@ bool AInventoryManager::TryAddItem(int32 NewItemID, int32 NewItemCount)
 
 bool AInventoryManager::TrySubtractItem(int32 SubItemID, int32 SubItemCount)
 {
-	UNetGameInstanceBase* NetGameInstance = Cast<UNetGameInstanceBase>(GetGameInstance());
-	if (!NetGameInstance)
-	{
-		return false;
-	}
-	UNetworkManager* NetworkManager = NetGameInstance->GetNetworkManager();
+	NetworkManager = GetNetworkManager_Inventory();
 	if (!NetworkManager)
 	{
 		return false;
@@ -187,12 +180,7 @@ void AInventoryManager::InventoryIsFull_Implementation()
 
 TArray<FAccountItemInfo> AInventoryManager::GetInventoryDataToDB()
 {
-	UNetGameInstanceBase* NetGameInstance = Cast<UNetGameInstanceBase>(GetGameInstance());
-	if (!NetGameInstance)
-	{
-		return TArray<FAccountItemInfo>();
-	}
-	UNetworkManager* NetworkManager = NetGameInstance->GetNetworkManager();
+	NetworkManager = GetNetworkManager_Inventory();
 	if (!NetworkManager)
 	{
 		return TArray<FAccountItemInfo>();

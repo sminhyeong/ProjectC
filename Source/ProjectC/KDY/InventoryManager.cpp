@@ -231,7 +231,16 @@ void AInventoryManager::S2C_ParseInventoryData_Implementation(const TArray<FAcco
 
 		FString ItemIDString = FString::FromInt(item.ItemID);
 		FItemArtInfo* ItemArtDTInfo = DT_ItemArtInfo->FindRow<FItemArtInfo>(FName(*ItemIDString), ItemIDString);
-		AllItemData.ItemArtInfo = *ItemArtDTInfo;
+		if (ItemArtDTInfo)
+		{
+			AllItemData.ItemArtInfo = *ItemArtDTInfo;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No Item Art Info"));
+			return;
+		}
+		
 
 		switch (ItemStruct::ConvertTypeToCategory(item.ItemType))
 		{

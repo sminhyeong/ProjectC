@@ -41,10 +41,11 @@ bool AInventoryManager::TryAddItem(int32 NewItemID, int32 NewItemCount)
 		return false;
 	}
 
-	// 현재 아이템 정보 가져오기
+	// 더할 아이템 정보 가져오기
 	FAccountLoginResponse UserData = NetworkManager->GetCurrentUserData();
 	FAccountItemInfo NewItemInfo;
 	FString OutMessage;
+	// 카테고리 정보가 필요해서 ItemInfo를 받아옴
 	if (NetworkManager->GetSingleItemInfo(UserData.UserID, NewItemID, NewItemInfo, OutMessage))
 	{
 		EItemCategory NewItemCategory = ItemStruct::ConvertTypeToCategory(NewItemInfo.ItemType);
@@ -71,6 +72,52 @@ bool AInventoryManager::TryAddItem(int32 NewItemID, int32 NewItemCount)
 		else
 		{
 			InventoryIsFull();
+		}
+	}
+	else
+	{
+		// 아이템 정보 가져오기 실패
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *OutMessage);
+	}
+	return false;
+}
+
+bool AInventoryManager::TrySubtractItem(int32 SubItemID, int32 SubItemCount)
+{
+	UNetGameInstanceBase* NetGameInstance = Cast<UNetGameInstanceBase>(GetGameInstance());
+	if (!NetGameInstance)
+	{
+		return false;
+	}
+	UNetworkManager* NetworkManager = NetGameInstance->GetNetworkManager();
+	if (!NetworkManager)
+	{
+		return false;
+	}
+
+	// 뺄 아이템 정보 가져오기
+	FAccountLoginResponse UserData = NetworkManager->GetCurrentUserData();
+	FAccountItemInfo SubItemInfo;
+	FString OutMessage;
+	// 카테고리 정보가 필요해서 ItemInfo를 받아옴
+	if (NetworkManager->GetSingleItemInfo(UserData.UserID, SubItemID, SubItemInfo, OutMessage))
+	{
+		EItemCategory SubItemCategory = ItemStruct::ConvertTypeToCategory(SubItemInfo.ItemType);
+		// 아이템 제거
+		if (NetworkManager->RemoveItemFromInventory(UserData.UserID, SubItemID, SubItemCount, OutMessage))
+		{
+			// 인벤토리 정보 갱신
+			UpdateInventoryData();
+			if (SubItemCategory == InventoryWidget->NowWatchCategory)
+			{
+				S2C_UpdateInventoryWidget();
+			}
+			return true;
+		}
+		else
+		{
+			// 아이템 제거 실패
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *OutMessage);
 		}
 	}
 	else

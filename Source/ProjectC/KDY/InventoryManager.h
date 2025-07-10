@@ -31,6 +31,9 @@ public:
 	bool TryAddItem(int32 NewItemID, int32 NewItemCount);
 
 	UFUNCTION(BlueprintCallable)
+	bool TrySubtractItem(int32 SubItemID, int32 SubItemCount);
+
+	UFUNCTION(BlueprintCallable)
 	bool CheckInventoryHasSpace(EItemCategory ItemCategory);
 
 	// DB로부터 정보를 받아와서 Parse후 InventoryManager에 저장하는 함수

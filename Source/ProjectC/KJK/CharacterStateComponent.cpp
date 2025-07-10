@@ -18,31 +18,32 @@ UCharacterStateComponent::UCharacterStateComponent()
 	// ...
 }
 //데미지 - 실드 추가
-float UCharacterStateComponent::AddDamage(FSkillClass InSkill, float& OutHP, float& OutShield)
+float UCharacterStateComponent::AddDamage(float DMGAmount, float& OutHP, float& OutShield)
 {
 
-
-	if (InSkill.DMG <= 0.f || CurHP <= 0.f)
+	if (DMGAmount <= 0.f || CurHP <= 0.f)
 	
 
-		UE_LOG(LogTemp, Log, TEXT("AddDamage: %.1f"), InSkill.DMG);
+		UE_LOG(LogTemp, Log, TEXT("AddDamage: %.1f"), DMGAmount);
 		if (CurShield > 0.f)
 		{
-			float ShieldDamage = FMath::Min(InSkill.DMG, CurShield);
+			float ShieldDamage = FMath::Min(DMGAmount, CurShield);
 			CurShield -= ShieldDamage;
-			InSkill.DMG -= ShieldDamage;
+			DMGAmount -= ShieldDamage;
 		}
 		// 남은 데미지를 체력에 적용
-		if (InSkill.DMG > 0.f)
+		if (DMGAmount > 0.f)
 		{
-			CurHP -= InSkill.DMG;
+			CurHP -= DMGAmount;
 			CurHP = FMath::Max(0.f, CurHP);
-		}
-	
 
-		UE_LOG(LogTemp, Log, TEXT("HP: %.1f / %.1f | Shield: %.1f / %.1f"), CurHP, MaxHP, CurShield, MaxShield);
+		}
+		OutShield = CurShield;
+		OutHP = CurHP;
+
+		UE_LOG(LogTemp, Log, TEXT("HP: %.1f / %.1f | Shield: %.1f / %.1f"), OutHP, MaxHP, OutShield, MaxShield);
 		
-		return InSkill.DMG;
+		return DMGAmount;
 		
 	
 }
@@ -51,9 +52,12 @@ float UCharacterStateComponent::AddDamage(FSkillClass InSkill, float& OutHP, flo
 float UCharacterStateComponent::AddHeal(float Amount, FSkillClass DamageType, AActor* Instigate)
 {
 	if (Amount <= 0.f || CurHP <= 0.f)
-
-	CurHP += Amount;
-	CurHP = FMath::Min(CurHP, MaxHP);
+	{
+		return CurHP;
+	}
+		CurHP += Amount;
+		CurHP = FMath::Min(CurHP, MaxHP);
+	
 
 	UE_LOG(LogTemp, Log, TEXT("AddHeal: %.1f -> HP: %.1f / %.1f"), Amount, CurHP, MaxHP);
 		return CurHP;
@@ -61,24 +65,28 @@ float UCharacterStateComponent::AddHeal(float Amount, FSkillClass DamageType, AA
 }
 
 //MP 회복
-float UCharacterStateComponent::AddMP(float Amount, FSkillClass DamageType, AActor* Instigate)
+float UCharacterStateComponent::AddMP(float Amount)
 {
 	if (Amount <= 0.f || CurMP <= 0.f)
+	{
 
-	CurMP += Amount;
-	CurMP = FMath::Min(CurMP, MaxMP);
+		CurMP += Amount;
+		CurMP = FMath::Min(CurMP, MaxMP);
+	}
 
 	UE_LOG(LogTemp, Log, TEXT("AdddMP: %.1f -> HP: %.1f / %.1f"), Amount, CurMP, MaxMP);
 		return CurMP;
 }
 
 //MP 사용
-float UCharacterStateComponent::UseMP(float Amount, FSkillClass DamageType, FCharacterState CharData)
+float UCharacterStateComponent::UseMP(float Amount)
 {
 	if (Amount <= 0.f || CurMP <= 0.f)
-	Skill = DamageType;
-	CharData.CurMP -= Amount;
-	CurMP = FMath::Min(CurMP, MaxMP);
+	{
+		Skill = DamageType;
+		CurMP -= Amount;
+		CurMP = FMath::Min(CurMP, MaxMP);
+	}
 
 	UE_LOG(LogTemp, Log, TEXT("UseMP: %.1f -> MP: %.1f / %.1f"), Amount, CurMP, MaxMP);
 		return CurMP;
@@ -88,9 +96,11 @@ float UCharacterStateComponent::UseMP(float Amount, FSkillClass DamageType, FCha
 float UCharacterStateComponent::AddShield(float Amount, FSkillClass DamageType, AActor* Instigate)
 {
 	if (Amount <= 0.f)
+	{
 
-	CurShield += Amount;
-	CurShield = FMath::Min(CurShield, MaxShield);
+		CurShield += Amount;
+		CurShield = FMath::Min(CurShield, MaxShield);
+	}
 
 	UE_LOG(LogTemp, Log, TEXT("AddShield: %.1f -> Shield: %.1f / %.1f"), Amount, CurShield, MaxShield);
 		return CurShield;

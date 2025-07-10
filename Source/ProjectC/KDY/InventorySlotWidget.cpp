@@ -7,9 +7,9 @@
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 
-void UInventorySlotWidget::SetSlotData(FRPGItemData SlotItem)
+void UInventorySlotWidget::SetSlotData(FItemAllInfo SlotItem)
 {
 	ItemData = SlotItem;
-	Image_Item->SetBrushFromTexture(SlotItem.ItemInfo.Texture);
-	Text_ItemNumber->SetText(FText::AsNumber(SlotItem.Number));
+	Image_Item->SetBrushFromTexture(SlotItem.ItemArtInfo.Texture);
+	Text_ItemNumber->SetText(FText::AsNumber(SlotItem.AccountItemInfo.Quantity));
 }

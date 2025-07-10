@@ -26,6 +26,6 @@ public:
 
 public:
     UPROPERTY(BlueprintReadWrite)
-    FRPGItemData ItemData;
+	FItemAllInfo ItemData;
 
 };

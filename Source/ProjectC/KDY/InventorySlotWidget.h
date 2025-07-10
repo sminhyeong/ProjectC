@@ -21,7 +21,7 @@ class PROJECTC_API UInventorySlotWidget : public UUserWidget, public IUserObject
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void SetSlotData(FRPGItemData SlotItem);
+	void SetSlotData(FItemAllInfo SlotItem);
 	
 public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
@@ -35,6 +35,6 @@ public:
 
 public:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	FRPGItemData ItemData;
+	FItemAllInfo ItemData;
 
 };

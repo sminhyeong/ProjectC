@@ -1,12 +1,13 @@
-// ClientPacketManager.h - ¼öÁ¤µÈ Çì´õ ÆÄÀÏ
+ï»¿// ClientPacketManager.h - ìˆ˜ì •ëœ í—¤ë” íŒŒì¼
 #pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "flatbuffers/flatbuffers.h"
+#include "../KDY/ItemStruct.h"
 #include "ClientPacketManager.generated.h"
 
-// === UE5¿ë ±¸Á¶Ã¼ Á¤ÀÇµé ===
+// === UE5ìš© êµ¬ì¡°ì²´ ì •ì˜ë“¤ ===
 
 USTRUCT(BlueprintType)
 struct PROJECTC_API FAccountLoginResponse
@@ -98,49 +99,12 @@ public:
     int32 Mana = 100;
 };
 
-USTRUCT(BlueprintType)
-struct PROJECTC_API FAccountItemInfo
-{
-    GENERATED_BODY()
-
-public:
-    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
-    int32 ItemID = 0;
-
-    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
-    FString ItemName;
-
-    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
-    int32 ItemType = 0;
-
-    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
-    int32 Quantity = 0;
-
-    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
-    int32 BasePrice = 0;
-
-    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
-    int32 AttackBonus = 0;
-
-    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
-    int32 DefenseBonus = 0;
-
-    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
-    int32 HPBonus = 0;
-
-    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
-    int32 MPBonus = 0;
-
-    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
-    FString Description;
-};
-
-// === FlatBuffers ±¸Á¶Ã¼µé Àü¹æ ¼±¾ğ ===
+// === FlatBuffers êµ¬ì¡°ì²´ë“¤ ì „ë°© ì„ ì–¸ ===
 struct DatabasePacket;
 
 /**
- * UE5¿ë Å¬¶óÀÌ¾ğÆ® ÆĞÅ¶ ¸Å´ÏÀú
- * Account Server¿ÍÀÇ ¸ğµç ÆĞÅ¶ Åë½ÅÀ» ´ã´ç
+ * UE5ìš© í´ë¼ì´ì–¸íŠ¸ íŒ¨í‚· ë§¤ë‹ˆì €
+ * Account Serverì™€ì˜ ëª¨ë“  íŒ¨í‚· í†µì‹ ì„ ë‹´ë‹¹
  */
 UCLASS(BlueprintType, Blueprintable)
 class PROJECTC_API UClientPacketManager : public UObject
@@ -150,128 +114,128 @@ class PROJECTC_API UClientPacketManager : public UObject
 public:
     UClientPacketManager();
 
-    // === Å¬¶óÀÌ¾ğÆ® ¿äÃ» ÆĞÅ¶ »ı¼º (C2S) ===
+    // === í´ë¼ì´ì–¸íŠ¸ ìš”ì²­ íŒ¨í‚· ìƒì„± (C2S) ===
 
-    // ·Î±×ÀÎ ¿äÃ» ÆĞÅ¶ »ı¼º
+    // ë¡œê·¸ì¸ ìš”ì²­ íŒ¨í‚· ìƒì„±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Login")
     TArray<uint8> CreateLoginRequest(const FString& Username, const FString& Password);
 
-    // ·Î±×¾Æ¿ô ¿äÃ» ÆĞÅ¶ »ı¼º
+    // ë¡œê·¸ì•„ì›ƒ ìš”ì²­ íŒ¨í‚· ìƒì„±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Login")
     TArray<uint8> CreateLogoutRequest(int32 UserID);
 
-    // °èÁ¤ »ı¼º ¿äÃ» ÆĞÅ¶ »ı¼º
+    // ê³„ì • ìƒì„± ìš”ì²­ íŒ¨í‚· ìƒì„±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Account")
     TArray<uint8> CreateAccountRequest(const FString& Username, const FString& Password, const FString& Nickname);
 
-    // ÇÃ·¹ÀÌ¾î µ¥ÀÌÅÍ ¿äÃ» ÆĞÅ¶ »ı¼º
+    // í”Œë ˆì´ì–´ ë°ì´í„° ìš”ì²­ íŒ¨í‚· ìƒì„±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Player Data")
     TArray<uint8> CreatePlayerDataRequest(int32 UserID);
 
-    // ¾ÆÀÌÅÛ µ¥ÀÌÅÍ ¿äÃ» ÆĞÅ¶ »ı¼º
+    // ì•„ì´í…œ ë°ì´í„° ìš”ì²­ íŒ¨í‚· ìƒì„±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Item")
     TArray<uint8> CreateItemDataRequest(int32 UserID, int32 RequestType, int32 ItemID = 0, int32 ItemCount = 0);
 
-    // === °ÔÀÓ ¼­¹ö °ü·Ã ¿äÃ» ÆĞÅ¶ »ı¼º (C2S) ===
+    // === ê²Œì„ ì„œë²„ ê´€ë ¨ ìš”ì²­ íŒ¨í‚· ìƒì„± (C2S) ===
 
-    // °ÔÀÓ ¼­¹ö »ı¼º ¿äÃ»
+    // ê²Œì„ ì„œë²„ ìƒì„± ìš”ì²­
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     TArray<uint8> CreateGameServerRequest(int32 UserID, const FString& ServerName, const FString& ServerPassword, const FString& ServerIP, int32 ServerPort, int32 MaxPlayers);
 
-    // °ÔÀÓ ¼­¹ö ¸ñ·Ï ¿äÃ»
+    // ê²Œì„ ì„œë²„ ëª©ë¡ ìš”ì²­
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     TArray<uint8> CreateGameServerListRequest(int32 RequestType);
 
-    // °ÔÀÓ ¼­¹ö Á¢¼Ó ¿äÃ»
+    // ê²Œì„ ì„œë²„ ì ‘ì† ìš”ì²­
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     TArray<uint8> CreateJoinGameServerRequest(int32 UserID, int32 ServerID, const FString& ServerPassword);
     
-    // °ÔÀÓ ¼­¹ö Á¾·á ¿äÃ»
+    // ê²Œì„ ì„œë²„ ì¢…ë£Œ ìš”ì²­
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     TArray<uint8> CreateCloseGameServerRequest(int32 UserID, int32 ServerID);
 
-    // ÇÃ·¹ÀÌ¾î µ¥ÀÌÅÍ ÀúÀå ¿äÃ»
+    // í”Œë ˆì´ì–´ ë°ì´í„° ì €ì¥ ìš”ì²­
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     TArray<uint8> CreateSavePlayerDataRequest(int32 UserID, int32 Level, int32 Experience, int32 Health, int32 Mana, int32 Gold, float PosX, float PosY);
 
-    //»óÁ¡ µ¥ÀÌÅÍ ºÒ·¯¿À±â
+    //ìƒì  ë°ì´í„° ë¶ˆëŸ¬ì˜¤ê¸°
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Shop")
     TArray<uint8> CreateStoreItemsRequest(int32 ShopID);
 
-    // »óÁ¡ °Å·¡ ¿äÃ» »ı¼º (C2S)
+    // ìƒì  ê±°ë˜ ìš”ì²­ ìƒì„± (C2S)
     TArray<uint8> CreateShopTransactionRequest(int32 UserID, int32 ItemID, int32 ItemCount, int32 TransactionType);
 
-    // === ¼­¹ö ÀÀ´ä ÆĞÅ¶ ÆÄ½Ì (S2C) ===
+    // === ì„œë²„ ì‘ë‹µ íŒ¨í‚· íŒŒì‹± (S2C) ===
 
-    // ·Î±×ÀÎ ÀÀ´ä ÆÄ½Ì
+    // ë¡œê·¸ì¸ ì‘ë‹µ íŒŒì‹±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Login")
     bool ParseLoginResponse(const TArray<uint8>& Data, FAccountLoginResponse& OutResponse);
 
-    // ·Î±×¾Æ¿ô ÀÀ´ä ÆÄ½Ì
+    // ë¡œê·¸ì•„ì›ƒ ì‘ë‹µ íŒŒì‹±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Login")
     bool ParseLogoutResponse(const TArray<uint8>& Data, FString& OutMessage);
 
-    // °èÁ¤ »ı¼º ÀÀ´ä ÆÄ½Ì
+    // ê³„ì • ìƒì„± ì‘ë‹µ íŒŒì‹±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Account")
     bool ParseCreateAccountResponse(const TArray<uint8>& Data, int32& OutUserID, FString& OutMessage, bool& bOutSuccess);
 
-    // ÇÃ·¹ÀÌ¾î µ¥ÀÌÅÍ ÀÀ´ä ÆÄ½Ì
+    // í”Œë ˆì´ì–´ ë°ì´í„° ì‘ë‹µ íŒŒì‹±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Player Data")
     bool ParsePlayerDataResponse(const TArray<uint8>& Data, FAccountPlayerData& OutPlayerData);
 
-    // ¾ÆÀÌÅÛ µ¥ÀÌÅÍ ÀÀ´ä ÆÄ½Ì
+    // ì•„ì´í…œ ë°ì´í„° ì‘ë‹µ íŒŒì‹±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Item")
     bool ParseItemDataResponse(const TArray<uint8>& Data, TArray<FAccountItemInfo>& OutItems);
 
-    // °ÔÀÓ ¼­¹ö »ı¼º ÀÀ´ä ÆÄ½Ì
+    // ê²Œì„ ì„œë²„ ìƒì„± ì‘ë‹µ íŒŒì‹±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     bool ParseCreateGameServerResponse(const TArray<uint8>& Data, int32& OutServerID, FString& OutMessage, bool& bOutSuccess);
 
-    // °ÔÀÓ ¼­¹ö ¸ñ·Ï ÀÀ´ä ÆÄ½Ì
+    // ê²Œì„ ì„œë²„ ëª©ë¡ ì‘ë‹µ íŒŒì‹±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     bool ParseGameServerListResponse(const TArray<uint8>& Data, TArray<FAccountGameServerInfo>& OutServerList);
 
-    // °ÔÀÓ ¼­¹ö Á¢¼Ó ÀÀ´ä ÆÄ½Ì
+    // ê²Œì„ ì„œë²„ ì ‘ì† ì‘ë‹µ íŒŒì‹±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     bool ParseJoinGameServerResponse(const TArray<uint8>& Data, FString& OutServerIP, int32& OutServerPort, FString& OutMessage, bool& bOutSuccess);
 
-    // °ÔÀÓ ¼­¹ö Á¾·á ÀÀ´ä ÆÄ½Ì
+    // ê²Œì„ ì„œë²„ ì¢…ë£Œ ì‘ë‹µ íŒŒì‹±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     bool ParseCloseGameServerResponse(const TArray<uint8>& Data, FString& OutMessage, bool& bOutSuccess);
 
-    // ÇÃ·¹ÀÌ¾î µ¥ÀÌÅÍ ÀúÀå ÀÀ´ä ÆÄ½Ì
+    // í”Œë ˆì´ì–´ ë°ì´í„° ì €ì¥ ì‘ë‹µ íŒŒì‹±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Game Server")
     bool ParseSavePlayerDataResponse(const TArray<uint8>& Data, FString& OutMessage, bool& bOutSuccess);
 
-    //»óÁ¡ µ¥ÀÌÅÍ ÀúÀå ÀÀ´ä ÆÄ½Ì
+    //ìƒì  ë°ì´í„° ì €ì¥ ì‘ë‹µ íŒŒì‹±
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Shop")
     bool ParseStoreItemsResponse(const TArray<uint8>& Data, TArray<FAccountItemInfo>& OutShopItems);
-    // === À¯Æ¿¸®Æ¼ ÇÔ¼öµé ===
+    // === ìœ í‹¸ë¦¬í‹° í•¨ìˆ˜ë“¤ ===
 
-    // ÆĞÅ¶ À¯È¿¼º °Ë»ç
+    // íŒ¨í‚· ìœ íš¨ì„± ê²€ì‚¬
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Utility")
     bool IsValidPacket(const TArray<uint8>& Data);
 
-    // ÆĞÅ¶ Å¸ÀÔ °¡Á®¿À±â
+    // íŒ¨í‚· íƒ€ì… ê°€ì ¸ì˜¤ê¸°
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Utility")
     int32 GetPacketType(const TArray<uint8>& Data);
 
-    // ÆĞÅ¶ Å¸ÀÔ ÀÌ¸§ °¡Á®¿À±â
+    // íŒ¨í‚· íƒ€ì… ì´ë¦„ ê°€ì ¸ì˜¤ê¸°
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Utility")
     FString GetPacketTypeName(int32 PacketType);
 
-    // Å¬¶óÀÌ¾ğÆ® ¼ÒÄÏ °¡Á®¿À±â
+    // í´ë¼ì´ì–¸íŠ¸ ì†Œì¼“ ê°€ì ¸ì˜¤ê¸°
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Utility")
     int32 GetClientSocket(const TArray<uint8>& Data);
 
-    // ¸¶Áö¸· ¿À·ù ¸Ş½ÃÁö °¡Á®¿À±â
+    // ë§ˆì§€ë§‰ ì˜¤ë¥˜ ë©”ì‹œì§€ ê°€ì ¸ì˜¤ê¸°
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Utility")
     FString GetLastError() const { return LastError; }
 
-    // »óÁ¡ °Å·¡ ÀÀ´ä ÆÄ½Ì (S2C)  
+    // ìƒì  ê±°ë˜ ì‘ë‹µ íŒŒì‹± (S2C)  
     bool ParseShopTransactionResponse(const TArray<uint8>& Data, int32& OutNewGold, FString& OutMessage, bool& bSuccess);
 
-    // === ÀÀ´ä ¼º°ø ¿©ºÎ È®ÀÎ ÇÔ¼öµé ===
+    // === ì‘ë‹µ ì„±ê³µ ì—¬ë¶€ í™•ì¸ í•¨ìˆ˜ë“¤ ===
 
     UFUNCTION(BlueprintCallable, Category = "Packet Manager|Validation")
     bool IsLoginSuccess(const TArray<uint8>& Data);
@@ -301,19 +265,19 @@ public:
     bool IsSavePlayerDataSuccess(const TArray<uint8>& Data);
 
 private:
-    // ¿À·ù °ü¸®
+    // ì˜¤ë¥˜ ê´€ë¦¬
     UPROPERTY()
     FString LastError;
 
-    // ÇïÆÛ ÇÔ¼öµé
+    // í—¬í¼ í•¨ìˆ˜ë“¤
     void SetError(const FString& Error);
     void ClearError();
     bool VerifyPacket(const uint8* Data, int32 Size);
 
-    // FlatBuffers À¯Æ¿¸®Æ¼
+    // FlatBuffers ìœ í‹¸ë¦¬í‹°
     const DatabasePacket* GetDatabasePacket(const uint8* Data) const;
 
-    // ¹®ÀÚ¿­ º¯È¯ À¯Æ¿¸®Æ¼
+    // ë¬¸ìì—´ ë³€í™˜ ìœ í‹¸ë¦¬í‹°
     FString ConvertToFString(const flatbuffers::String* FBString) const;
     std::string ConvertToStdString(const FString& UEString) const;
 };

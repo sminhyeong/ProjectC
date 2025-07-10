@@ -3,6 +3,8 @@
 
 #include "InventoryManager.h"
 #include "InventoryWidget.h"
+#include "../SMH/NetGameInstanceBase.h"
+#include "../SMH/NetworkManager.h"
 
 // Sets default values
 AInventoryManager::AInventoryManager()
@@ -26,92 +28,173 @@ void AInventoryManager::Tick(float DeltaTime)
 
 }
 
-bool AInventoryManager::C2S_AddItem_Validate(FRPGItemData NewItemData)
+bool AInventoryManager::TryAddItem(int32 NewItemID, int32 NewItemCount)
 {
-	// 인벤토리가 가득 찼는지 확인
-	TArray<FRPGItemData> CheckList;
-	switch (NewItemData.ItemInfo.Category)
+	UNetGameInstanceBase* NetGameInstance = Cast<UNetGameInstanceBase>(GetGameInstance());
+	if (!NetGameInstance)
 	{
-		case EItemCategory::WEAPON:
-		{
-			CheckList = WeaponList;
-			break;
-		}
-		case EItemCategory::ARMOR:
-		{
-			CheckList = ArmorList;
-			break;
-		}
-		case EItemCategory::CONSUME:
-		{
-			CheckList = ConsumeList;
-			break;
-		}
-		default:
-			break;
-	}
-	if (CheckList.Num() >= MaxItemPerCategory)
-	{
-		InventoryIsFull();
 		return false;
+	}
+	UNetworkManager* NetworkManager = NetGameInstance->GetNetworkManager();
+	if (!NetworkManager)
+	{
+		return false;
+	}
+
+	// 현재 아이템 정보 가져오기
+	FAccountLoginResponse UserData = NetworkManager->GetCurrentUserData();
+	FAccountItemInfo NewItemInfo;
+	FString OutMessage;
+	if (NetworkManager->GetSingleItemInfo(UserData.UserID, NewItemID, NewItemInfo, OutMessage))
+	{
+		EItemCategory NewItemCategory = ItemStruct::ConvertTypeToCategory(NewItemInfo.ItemType);
+		// 인벤토리에 자리가 있을 때
+		if (CheckInventoryHasSpace(NewItemCategory))
+		{
+			// 아이템 추가
+			if (NetworkManager->AddItemToInventory(UserData.UserID, NewItemID, NewItemCount, OutMessage))
+			{
+				//// 인벤토리 위젯을 위한 정보 갱신
+				//UpdateInventoryList();
+				//if (NewItemCategory == InventoryWidget->NowWatchCategory)
+				//{
+					UpdateInventoryWidget();
+				//}
+				return true;
+			}
+			else
+			{
+				// 아이템 추가 실패
+				UE_LOG(LogTemp, Warning, TEXT("%s"), *OutMessage);
+			}
+		}
+		else
+		{
+			InventoryIsFull();
+		}
 	}
 	else
 	{
-		return true;
+		// 아이템 정보 가져오기 실패
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *OutMessage);
 	}
-
 	return false;
 }
 
-void AInventoryManager::C2S_AddItem_Implementation(FRPGItemData NewItemData)
+bool AInventoryManager::CheckInventoryHasSpace(EItemCategory ItemCategory)
 {
-	switch (NewItemData.ItemInfo.Category)
+	switch (ItemCategory)
 	{
-		case EItemCategory::WEAPON:
-		{
-			WeaponList.Add(NewItemData);
-			break;
-		}
-		case EItemCategory::ARMOR:
-		{
-			ArmorList.Add(NewItemData);
-			break;
-		}
-		case EItemCategory::CONSUME:
-		{
-			ConsumeList.Add(NewItemData);
-			break;
-		}
-		default:
-			break;
+	case EItemCategory::WEAPON:
+	{
+		return WeaponList.Num() < MaxItemPerCategory;
 	}
-	if (NewItemData.ItemInfo.Category == InventoryWidget->NowWatchCategory)
+	case EItemCategory::ARMOR:
 	{
-		S2C_UpdateInventory(NewItemData.ItemInfo.Category);
+		return ArmorList.Num() < MaxItemPerCategory;
+	}
+	case EItemCategory::CONSUME:
+	{
+		return ConsumeList.Num() < MaxItemPerCategory;
+	}
+	default:
+		return false;
 	}
 }
 
-void AInventoryManager::S2C_UpdateInventory_Implementation(EItemCategory UpdateListCategory)
+void AInventoryManager::UpdateInventoryList()
 {
-	switch (UpdateListCategory)
+	UNetGameInstanceBase* NetGameInstance = Cast<UNetGameInstanceBase>(GetGameInstance());
+	if (!NetGameInstance)
 	{
-		case EItemCategory::WEAPON:
+		return;
+	}
+	UNetworkManager* NetworkManager = NetGameInstance->GetNetworkManager();
+	if (!NetworkManager)
+	{
+		return;
+	}
+	FAccountLoginResponse UserData = NetworkManager->GetCurrentUserData();
+
+	// AccountItemInfo 정보 불러오기
+	TArray<FAccountItemInfo> InventoryItems;
+	FString OutMessage;
+	if (!NetworkManager->GetPlayerInventory(UserData.UserID, InventoryItems, OutMessage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *OutMessage);
+		return;
+	}
+
+	// ItemArtInfo 정보 불러오기
+	if (!DT_ItemArtInfo)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No ItemArtInfo Data Table"));
+		return;
+	}
+	if (DT_ItemArtInfo->GetRowMap().Num() <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Data Table is Not Valid"));
+		return;
+	}
+
+	for (auto item : InventoryItems)
+	{
+		FItemAllInfo AllItemData;
+		AllItemData.AccountItemInfo = item;
+
+		FString ItemIDString = FString::FromInt(item.ItemID);
+		FItemArtInfo* ItemArtDTInfo = DT_ItemArtInfo->FindRow<FItemArtInfo>(FName(*ItemIDString), ItemIDString);
+		AllItemData.ItemArtInfo = *ItemArtDTInfo;
+
+		switch (ItemStruct::ConvertTypeToCategory(item.ItemType))
 		{
-			InventoryWidget->UpdateItemList(WeaponList);
-			break;
+			case EItemCategory::WEAPON:
+			{
+				WeaponList.Add(AllItemData);
+				break;
+			}
+			case EItemCategory::ARMOR:
+			{
+				ArmorList.Add(AllItemData);
+				break;
+			}
+			case EItemCategory::CONSUME:
+			{
+				ConsumeList.Add(AllItemData);
+				break;
+			}
+			default:
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Wrong Category"));
+				break;
+			}
 		}
-		case EItemCategory::ARMOR:
-		{
-			InventoryWidget->UpdateItemList(ArmorList);
-			break;
-		}
-		case EItemCategory::CONSUME:
-		{
-			InventoryWidget->UpdateItemList(ConsumeList);
-			break;
-		}
-		default:
-			break;
+	}
+}
+
+void AInventoryManager::UpdateInventoryWidget()
+{
+	if (false) return;
+
+	switch (InventoryWidget->NowWatchCategory)
+	{
+	case EItemCategory::WEAPON:
+	{
+		InventoryWidget->UpdateItemList(WeaponList);
+		break;
+	}
+	case EItemCategory::ARMOR:
+	{
+		InventoryWidget->UpdateItemList(ArmorList);
+		break;
+	}
+	case EItemCategory::CONSUME:
+	{
+		InventoryWidget->UpdateItemList(ConsumeList);
+		break;
+	}
+	default:
+		break;
 	}
 }
 

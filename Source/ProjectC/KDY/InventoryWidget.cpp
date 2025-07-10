@@ -8,21 +8,23 @@
 #include "InventorySlotWidget.h"
 #include "Components/Image.h"
 
-void UInventoryWidget::UpdateItemList(const TArray<FRPGItemData> ItemList)
+void UInventoryWidget::UpdateItemList(const TArray<FItemAllInfo> ItemList)
 {
 	TileView_Items->ClearListItems();
 
-	for (auto item : ItemList)
-	{
-		UInventorySlotWidget* NewItemSlot = CreateWidget<UInventorySlotWidget>(this, InventorySlotWidgetClass);
-		if (NewItemSlot)
-		{
-			NewItemSlot->SetSlotData(item);
-			TileView_Items->AddItem(NewItemSlot);
-		}
-	}
 	if (ItemList.Num() > 0)
 	{
-		NowWatchCategory = ItemList[0].ItemInfo.Category;
+		NowWatchCategory = ItemStruct::ConvertTypeToCategory(ItemList[0].AccountItemInfo.ItemType);
+
+		for (auto item : ItemList)
+		{
+			UInventorySlotWidget* NewItemSlot = CreateWidget<UInventorySlotWidget>(this, InventorySlotWidgetClass);
+			if (NewItemSlot)
+			{
+				NewItemSlot->SetSlotData(item);
+				TileView_Items->AddItem(NewItemSlot);
+			}
+		}
+		
 	}
 }

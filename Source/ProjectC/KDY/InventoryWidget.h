@@ -20,7 +20,7 @@ class PROJECTC_API UInventoryWidget : public UUserWidget
 	
 public:
 	UFUNCTION()
-	void UpdateItemList(const TArray<FRPGItemData> ItemList);
+	void UpdateItemList(const TArray<FItemAllInfo> ItemList);
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)

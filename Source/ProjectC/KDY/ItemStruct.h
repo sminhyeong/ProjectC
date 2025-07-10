@@ -15,40 +15,71 @@ enum class EItemCategory : uint8
 };
 
 USTRUCT(BlueprintType)
-struct FRPGItemInfo : public FTableRowBase
+struct PROJECTC_API FAccountItemInfo
 {
     GENERATED_BODY()
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 Id;
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
+    int32 ItemID = 0;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString Name;
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
+    FString ItemName;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    EItemCategory Category;
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
+    int32 ItemType = 0;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TObjectPtr<UStaticMesh> Mesh;
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
+    int32 Quantity = 0;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TObjectPtr<UTexture2D> Texture;
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
+    int32 BasePrice = 0;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
+    int32 AttackBonus = 0;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
+    int32 DefenseBonus = 0;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
+    int32 HPBonus = 0;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
+    int32 MPBonus = 0;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
     FString Description;
 };
 
 USTRUCT(BlueprintType)
-struct FRPGItemData
+struct FItemArtInfo : public FTableRowBase
 {
     GENERATED_BODY()
 
 public:
-    UPROPERTY(BlueprintReadWrite)
-    FRPGItemInfo ItemInfo;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Info")
+    TObjectPtr<UStaticMesh> StaticMesh;
 
-    // 아이템 개수
-    UPROPERTY(BlueprintReadWrite)
-    int32 Number;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Info")
+    TObjectPtr<UTexture2D> Texture;
+    
+};
+
+USTRUCT(BlueprintType)
+struct FItemAllInfo
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
+    FAccountItemInfo AccountItemInfo;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Item Info")
+    FItemArtInfo ItemArtInfo;
+};
+
+class PROJECTC_API ItemStruct
+{
+public:
+    static EItemCategory ConvertTypeToCategory(int32 ItemType);
 };

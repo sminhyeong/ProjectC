@@ -42,7 +42,7 @@ public:
 
 	//µ¥¹ÌÁö
 	UFUNCTION(BlueprintCallable)
-	float AddDamage(FSkillClass Skill,float& OutHP, float& OutShield);
+	float AddDamage(float DMGAmount,float& OutHP, float& OutShield);
 
 
 	UFUNCTION(BlueprintCallable)
@@ -51,12 +51,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 
-	float AddMP(float Amount, FSkillClass DamageType, AActor* Instigate);
+	float AddMP(float Amount);
 
 
 	UFUNCTION(BlueprintCallable)
 
-	float UseMP(float Amount, FSkillClass DamageType, FCharacterState CharData);
+	float UseMP(float Amount);
 	
 	UFUNCTION(BlueprintCallable)
 

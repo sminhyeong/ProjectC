@@ -60,7 +60,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 
-	float AddShield(float Damage,float& OutHP);
+	float AddShield(float Damage,float& OutShield);
 
 
 

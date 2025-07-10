@@ -58,7 +58,7 @@ float UCharacterStateComponent::AddHeal(float Amount, float& OutHP)
 		CurHP += Amount;
 		CurHP = FMath::Min(CurHP, MaxHP);
 	
-
+		OutHP = CurHP;
 	UE_LOG(LogTemp, Log, TEXT("AddHeal: %.1f -> HP: %.1f / %.1f"), Amount, CurHP, MaxHP);
 		return CurHP;
 
@@ -67,14 +67,14 @@ float UCharacterStateComponent::AddHeal(float Amount, float& OutHP)
 //MP 회복
 float UCharacterStateComponent::AddMP(float Amount, float& OutMP)
 {
-	if (Amount <= 0.f || CurMP <= 0.f)
+	if (Amount <= 0.f || CurMP >= MaxMP)
 	{
-
+		return CurMP;
+	}
 		CurMP += Amount;
 		CurMP = FMath::Min(CurMP, MaxMP);
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("AdddMP: %.1f -> HP: %.1f / %.1f"), Amount, CurMP, MaxMP);
+	OutMP = CurMP;
+	UE_LOG(LogTemp, Log, TEXT("AddMP: %.1f -> MP: %.1f / %.1f"), Amount, CurMP, MaxMP);
 		return CurMP;
 }
 
@@ -83,10 +83,12 @@ float UCharacterStateComponent::UseMP(float Amount, float& OutMP)
 {
 	if (Amount <= 0.f || CurMP <= 0.f)
 	{
-		CurMP -= Amount;
-		CurMP = FMath::Min(CurMP, MaxMP);
+		return CurMP;
 	}
-
+		CurMP -= Amount;
+		CurMP = FMath::Max(0.f, CurMP);
+	
+	OutMP = CurMP;
 	UE_LOG(LogTemp, Log, TEXT("UseMP: %.1f -> MP: %.1f / %.1f"), Amount, CurMP, MaxMP);
 		return CurMP;
 }
@@ -94,13 +96,14 @@ float UCharacterStateComponent::UseMP(float Amount, float& OutMP)
 //실드 추가
 float UCharacterStateComponent::AddShield(float Amount, float& OutShield)
 {
-	if (Amount <= 0.f)
+	if (Amount <= 0.f || CurShield <= 0.f)
 	{
-
+		return CurShield;
+	}
 		CurShield += Amount;
 		CurShield = FMath::Min(CurShield, MaxShield);
-	}
-
+	
+	OutShield = CurShield;
 	UE_LOG(LogTemp, Log, TEXT("AddShield: %.1f -> Shield: %.1f / %.1f"), Amount, CurShield, MaxShield);
 		return CurShield;
 }

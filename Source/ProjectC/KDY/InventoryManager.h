@@ -71,7 +71,7 @@ private:
 	TArray<FItemAllInfo> ConsumeList;
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInventoryWidget> InventoryWidget;
+	TObjectPtr<UInventoryWidget> InventoryWindowWidget;
 
 	UPROPERTY(EditAnywhere)
 	int32 MaxItemPerCategory{ 20 };

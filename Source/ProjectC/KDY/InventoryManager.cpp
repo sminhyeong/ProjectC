@@ -57,7 +57,7 @@ bool AInventoryManager::TryAddItem(int32 NewItemID, int32 NewItemCount)
 			{
 				// 인벤토리 정보 갱신
 				UpdateInventoryData();
-				if (NewItemCategory == InventoryWidget->NowWatchCategory)
+				if (NewItemCategory == InventoryWindowWidget->NowWatchCategory)
 				{
 					S2C_UpdateInventoryWidget();
 				}
@@ -108,7 +108,7 @@ bool AInventoryManager::TrySubtractItem(int32 SubItemID, int32 SubItemCount)
 		{
 			// 인벤토리 정보 갱신
 			UpdateInventoryData();
-			if (SubItemCategory == InventoryWidget->NowWatchCategory)
+			if (SubItemCategory == InventoryWindowWidget->NowWatchCategory)
 			{
 				S2C_UpdateInventoryWidget();
 			}
@@ -156,21 +156,21 @@ void AInventoryManager::UpdateInventoryData()
 
 void AInventoryManager::S2C_UpdateInventoryWidget_Implementation()
 {
-	switch (InventoryWidget->NowWatchCategory)
+	switch (InventoryWindowWidget->NowWatchCategory)
 	{
 		case EItemCategory::WEAPON:
 		{
-			InventoryWidget->UpdateItemList(WeaponList);
+			InventoryWindowWidget->UpdateItemList(WeaponList);
 			break;
 		}
 		case EItemCategory::ARMOR:
 		{
-			InventoryWidget->UpdateItemList(ArmorList);
+			InventoryWindowWidget->UpdateItemList(ArmorList);
 			break;
 		}
 		case EItemCategory::CONSUME:
 		{
-			InventoryWidget->UpdateItemList(ConsumeList);
+			InventoryWindowWidget->UpdateItemList(ConsumeList);
 			break;
 		}
 		default:

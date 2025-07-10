@@ -47,20 +47,20 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 
-	float AddHeal(float Amount, FSkillClass DamageType, AActor* Instigate);
+	float AddHeal(float Amount, float& OutHP);
 
 	UFUNCTION(BlueprintCallable)
 
-	float AddMP(float Amount);
+	float AddMP(float Amount, float& OutMP);
 
 
 	UFUNCTION(BlueprintCallable)
 
-	float UseMP(float Amount);
+	float UseMP(float Amount, float& OutMP);
 	
 	UFUNCTION(BlueprintCallable)
 
-	float AddShield(float Damage, FSkillClass DamageType, AActor* Instigate);
+	float AddShield(float Damage,float& OutHP);
 
 
 

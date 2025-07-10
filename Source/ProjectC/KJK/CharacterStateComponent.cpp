@@ -49,7 +49,7 @@ float UCharacterStateComponent::AddDamage(float DMGAmount, float& OutHP, float& 
 }
 
 //힐
-float UCharacterStateComponent::AddHeal(float Amount, FSkillClass DamageType, AActor* Instigate)
+float UCharacterStateComponent::AddHeal(float Amount, float& OutHP)
 {
 	if (Amount <= 0.f || CurHP <= 0.f)
 	{
@@ -65,7 +65,7 @@ float UCharacterStateComponent::AddHeal(float Amount, FSkillClass DamageType, AA
 }
 
 //MP 회복
-float UCharacterStateComponent::AddMP(float Amount)
+float UCharacterStateComponent::AddMP(float Amount, float& OutMP)
 {
 	if (Amount <= 0.f || CurMP <= 0.f)
 	{
@@ -79,7 +79,7 @@ float UCharacterStateComponent::AddMP(float Amount)
 }
 
 //MP 사용
-float UCharacterStateComponent::UseMP(float Amount)
+float UCharacterStateComponent::UseMP(float Amount, float& OutMP)
 {
 	if (Amount <= 0.f || CurMP <= 0.f)
 	{
@@ -92,7 +92,7 @@ float UCharacterStateComponent::UseMP(float Amount)
 }
 
 //실드 추가
-float UCharacterStateComponent::AddShield(float Amount, FSkillClass DamageType, AActor* Instigate)
+float UCharacterStateComponent::AddShield(float Amount, float& OutShield)
 {
 	if (Amount <= 0.f)
 	{

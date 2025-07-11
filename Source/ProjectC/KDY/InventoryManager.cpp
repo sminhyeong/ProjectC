@@ -11,7 +11,7 @@
 // Sets default values
 AInventoryManager::AInventoryManager()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
@@ -20,7 +20,7 @@ AInventoryManager::AInventoryManager()
 void AInventoryManager::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 }
 
 // Called every frame
@@ -151,25 +151,25 @@ void AInventoryManager::S2C_UpdateInventoryWidget_Implementation()
 {
 	switch (InventoryWindowWidget->NowWatchCategory)
 	{
-	case EItemCategory::WEAPON:
-	{
-		InventoryWindowWidget->UpdateItemList(WeaponList);
-		break;
-	}
-	case EItemCategory::ARMOR:
-	{
-		InventoryWindowWidget->UpdateItemList(ArmorList);
-		break;
-	}
-	case EItemCategory::CONSUME:
-	{
-		InventoryWindowWidget->UpdateItemList(ConsumeList);
-		break;
-	}
-	default:
-	{
-		break;
-	}
+		case EItemCategory::WEAPON:
+		{
+			InventoryWindowWidget->UpdateItemList(WeaponList);
+			break;
+		}
+		case EItemCategory::ARMOR:
+		{
+			InventoryWindowWidget->UpdateItemList(ArmorList);
+			break;
+		}
+		case EItemCategory::CONSUME:
+		{
+			InventoryWindowWidget->UpdateItemList(ConsumeList);
+			break;
+		}
+		default:
+		{
+			break;
+		}
 	}
 }
 
@@ -212,10 +212,6 @@ void AInventoryManager::S2C_ParseInventoryData_Implementation(const TArray<FAcco
 		return;
 	}
 
-	WeaponList.Reset();
-	ArmorList.Reset();
-	ConsumeList.Reset();
-
 	for (auto item : InventoryItems)
 	{
 		FItemAllInfo AllItemData;
@@ -232,7 +228,7 @@ void AInventoryManager::S2C_ParseInventoryData_Implementation(const TArray<FAcco
 			UE_LOG(LogTemp, Warning, TEXT("No Item Art Info"));
 			return;
 		}
-
+		
 
 		switch (ItemStruct::ConvertTypeToCategory(item.ItemType))
 		{

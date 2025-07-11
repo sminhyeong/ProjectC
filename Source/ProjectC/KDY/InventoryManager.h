@@ -41,7 +41,7 @@ public:
 
 	// DB로부터 정보를 받아와서 Parse후 InventoryManager에 저장하는 함수
 	UFUNCTION(BlueprintCallable)
-	void UpdateInventoryData();
+	void UpdateInventoryData(int32 UseId);
 
 	// InventoryManager에 저장된 정보로 Widget을 갱신하는 함수
 	UFUNCTION(Client, Reliable, BlueprintCallable)
@@ -61,7 +61,7 @@ public:
 private:
 	// DB로부터 정보를 받아와서 InventoryManager로 가져오는 함수
 	UFUNCTION()
-	TArray<FAccountItemInfo> GetInventoryDataToDB();
+	TArray<FAccountItemInfo> GetInventoryDataToDB(int32 UseId);
 
 	// 받아온 정보를 InventoryManager에 Parse해서 저장하는 함수
 	UFUNCTION(Client, Reliable)

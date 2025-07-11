@@ -7,6 +7,7 @@
 #include "../SMH/NetworkManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameStateBase.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AInventoryManager::AInventoryManager()
@@ -14,6 +15,7 @@ AInventoryManager::AInventoryManager()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned
@@ -30,28 +32,26 @@ void AInventoryManager::Tick(float DeltaTime)
 
 }
 
-bool AInventoryManager::TryAddItem(int32 NewItemID, int32 NewItemCount)
+void AInventoryManager::C2S_TryAddItem_Implementation(int32 NewItemID, int32 NewItemCount, int32 UserID)
 {
-	// TObjectPtr<AGameModeBase> GM = UGameplayStatics::GetGameState(GetWorld())->AuthorityGameMode;
 	NetworkManager = GetNetworkManager_Inventory();
 	if (!NetworkManager)
 	{
-		return false;
+		return;
 	}
 
 	// 더할 아이템 정보 가져오기
-	FAccountLoginResponse UserData = NetworkManager->GetCurrentUserData();
 	FAccountItemInfo NewItemInfo;
 	FString OutMessage;
 	// 카테고리 정보가 필요해서 ItemInfo를 받아옴
-	if (NetworkManager->GetSingleItemInfo(UserData.UserID, NewItemID, NewItemInfo, OutMessage))
+	if (NetworkManager->GetSingleItemInfo(UserID, NewItemID, NewItemInfo, OutMessage))
 	{
 		EItemCategory NewItemCategory = ItemStruct::ConvertTypeToCategory(NewItemInfo.ItemType);
 		// 인벤토리에 자리가 있을 때
 		if (CheckInventoryHasSpace(NewItemCategory))
 		{
 			// 아이템 추가
-			if (NetworkManager->AddItemToInventory(UserData.UserID, NewItemID, NewItemCount, OutMessage))
+			if (NetworkManager->AddItemToInventory(UserID, NewItemID, NewItemCount, OutMessage))
 			{
 				// 인벤토리 정보 갱신
 				UpdateInventoryData();
@@ -59,7 +59,8 @@ bool AInventoryManager::TryAddItem(int32 NewItemID, int32 NewItemCount)
 				{
 					S2C_UpdateInventoryWidget();
 				}
-				return true;
+				UE_LOG(LogTemp, Warning, TEXT("Success Add Item"));
+				return;
 			}
 			else
 			{
@@ -77,27 +78,26 @@ bool AInventoryManager::TryAddItem(int32 NewItemID, int32 NewItemCount)
 		// 아이템 정보 가져오기 실패
 		UE_LOG(LogTemp, Warning, TEXT("%s"), *OutMessage);
 	}
-	return false;
+	return;
 }
 
-bool AInventoryManager::TrySubtractItem(int32 SubItemID, int32 SubItemCount)
+void AInventoryManager::C2S_TrySubtractItem_Implementation(int32 SubItemID, int32 SubItemCount, int32 UserID)
 {
 	NetworkManager = GetNetworkManager_Inventory();
 	if (!NetworkManager)
 	{
-		return false;
+		return;
 	}
 
 	// 뺄 아이템 정보 가져오기
-	FAccountLoginResponse UserData = NetworkManager->GetCurrentUserData();
 	FAccountItemInfo SubItemInfo;
 	FString OutMessage;
 	// 카테고리 정보가 필요해서 ItemInfo를 받아옴
-	if (NetworkManager->GetSingleItemInfo(UserData.UserID, SubItemID, SubItemInfo, OutMessage))
+	if (NetworkManager->GetSingleItemInfo(UserID, SubItemID, SubItemInfo, OutMessage))
 	{
 		EItemCategory SubItemCategory = ItemStruct::ConvertTypeToCategory(SubItemInfo.ItemType);
 		// 아이템 제거
-		if (NetworkManager->RemoveItemFromInventory(UserData.UserID, SubItemID, SubItemCount, OutMessage))
+		if (NetworkManager->RemoveItemFromInventory(UserID, SubItemID, SubItemCount, OutMessage))
 		{
 			// 인벤토리 정보 갱신
 			UpdateInventoryData();
@@ -105,7 +105,8 @@ bool AInventoryManager::TrySubtractItem(int32 SubItemID, int32 SubItemCount)
 			{
 				S2C_UpdateInventoryWidget();
 			}
-			return true;
+			UE_LOG(LogTemp, Warning, TEXT("Success Sub Item"));
+			return;
 		}
 		else
 		{
@@ -118,7 +119,7 @@ bool AInventoryManager::TrySubtractItem(int32 SubItemID, int32 SubItemCount)
 		// 아이템 정보 가져오기 실패
 		UE_LOG(LogTemp, Warning, TEXT("%s"), *OutMessage);
 	}
-	return false;
+	return;
 }
 
 bool AInventoryManager::CheckInventoryHasSpace(EItemCategory ItemCategory)
@@ -176,6 +177,15 @@ void AInventoryManager::S2C_UpdateInventoryWidget_Implementation()
 void AInventoryManager::InventoryIsFull_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Inventory is Full"));
+}
+
+void AInventoryManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AInventoryManager, WeaponList);
+	DOREPLIFETIME(AInventoryManager, ArmorList);
+	DOREPLIFETIME(AInventoryManager, ConsumeList);
 }
 
 TArray<FAccountItemInfo> AInventoryManager::GetInventoryDataToDB()

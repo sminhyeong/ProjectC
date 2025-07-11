@@ -28,11 +28,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable)
-	bool TryAddItem(int32 NewItemID, int32 NewItemCount);
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void C2S_TryAddItem(int32 NewItemID, int32 NewItemCount, int32 UserID);
+	void C2S_TryAddItem_Implementation(int32 NewItemID, int32 NewItemCount, int32 UserID);
 
-	UFUNCTION(BlueprintCallable)
-	bool TrySubtractItem(int32 SubItemID, int32 SubItemCount);
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void C2S_TrySubtractItem(int32 SubItemID, int32 SubItemCount, int32 UserID);
+	void C2S_TrySubtractItem_Implementation(int32 SubItemID, int32 SubItemCount, int32 UserID);
 
 	UFUNCTION(BlueprintCallable)
 	bool CheckInventoryHasSpace(EItemCategory ItemCategory);
@@ -54,6 +56,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	UNetworkManager* GetNetworkManager_Inventory();
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 private:
 	// DB로부터 정보를 받아와서 InventoryManager로 가져오는 함수
 	UFUNCTION()
@@ -65,13 +69,13 @@ private:
 	void S2C_ParseInventoryData_Implementation(const TArray<FAccountItemInfo>& InventoryItems);
 
 private:
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Replicated, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemAllInfo> WeaponList;
 
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Replicated, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemAllInfo> ArmorList;
 
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Replicated, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemAllInfo> ConsumeList;
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))

@@ -57,7 +57,7 @@ void AInventoryManager::C2S_TryAddItem_Implementation(int32 NewItemID, int32 New
 				UpdateInventoryData(UserID);
 				if (NewItemCategory == InventoryWindowWidget->NowWatchCategory)
 				{
-					S2C_UpdateInventoryWidget();
+					S2C_UpdateInventoryWidget(InventoryWindowWidget);
 				}
 				UE_LOG(LogTemp, Warning, TEXT("Success Add Item"));
 				return;
@@ -103,7 +103,7 @@ void AInventoryManager::C2S_TrySubtractItem_Implementation(int32 SubItemID, int3
 			UpdateInventoryData(UserID);
 			if (SubItemCategory == InventoryWindowWidget->NowWatchCategory)
 			{
-				S2C_UpdateInventoryWidget();
+				S2C_UpdateInventoryWidget(InventoryWindowWidget);
 			}
 			UE_LOG(LogTemp, Warning, TEXT("Success Sub Item"));
 			return;
@@ -148,29 +148,36 @@ void AInventoryManager::UpdateInventoryData(int32 UseId)
 	S2C_ParseInventoryData(GetInventoryDataToDB(UseId));
 }
 
-void AInventoryManager::S2C_UpdateInventoryWidget_Implementation()
+void AInventoryManager::S2C_UpdateInventoryWidget_Implementation(UInventoryWidget* InventoryWindow)
 {
-	switch (InventoryWindowWidget->NowWatchCategory)
+	if (InventoryWindow)
 	{
-	case EItemCategory::WEAPON:
-	{
-		InventoryWindowWidget->UpdateItemList(WeaponList);
-		break;
+		switch (InventoryWindow->NowWatchCategory)
+		{
+		case EItemCategory::WEAPON:
+		{
+			InventoryWindow->UpdateItemList(WeaponList);
+			break;
+		}
+		case EItemCategory::ARMOR:
+		{
+			InventoryWindow->UpdateItemList(ArmorList);
+			break;
+		}
+		case EItemCategory::CONSUME:
+		{
+			InventoryWindow->UpdateItemList(ConsumeList);
+			break;
+		}
+		default:
+		{
+			break;
+		}
+		}
 	}
-	case EItemCategory::ARMOR:
+	else
 	{
-		InventoryWindowWidget->UpdateItemList(ArmorList);
-		break;
-	}
-	case EItemCategory::CONSUME:
-	{
-		InventoryWindowWidget->UpdateItemList(ConsumeList);
-		break;
-	}
-	default:
-	{
-		break;
-	}
+		UE_LOG(LogTemp, Warning, TEXT("S2C_UpdateInventoryWidget::InventoryWindow is null"));
 	}
 }
 

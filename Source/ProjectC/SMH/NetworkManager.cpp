@@ -669,7 +669,7 @@ bool UNetworkManager::GetStoreItemList(int32 ShopID, TArray<FAccountItemInfo>& O
 	return true;
 }
 
-bool UNetworkManager::PurchaseItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage)
+bool UNetworkManager::PurchaseItem(int32 UserID, int32 StoreID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage)
 {
 	OutNewGold = 0;
 	OutMessage = TEXT("");
@@ -690,7 +690,7 @@ bool UNetworkManager::PurchaseItem(int32 UserID, int32 ItemID, int32 ItemCount, 
 		UserID, ItemID, ItemCount);
 
 	// 구매 요청 패킷 생성 (TransactionType = 0: 구매)
-	TArray<uint8> Packet = ClientPacketManager->CreateShopTransactionRequest(UserID, ItemID, ItemCount, 0);
+	TArray<uint8> Packet = ClientPacketManager->CreateShopTransactionRequest(UserID, StoreID, ItemID, ItemCount, 0);
 	if (Packet.Num() == 0 || !SendPacketData(Packet))
 	{
 		OutMessage = TEXT("아이템 구매 요청 실패");
@@ -724,7 +724,7 @@ bool UNetworkManager::PurchaseItem(int32 UserID, int32 ItemID, int32 ItemCount, 
 	return bSuccess;
 }
 
-bool UNetworkManager::SellItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage)
+bool UNetworkManager::SellItem(int32 UserID, int32 StoreID,int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage)
 {
 	OutNewGold = 0;
 	OutMessage = TEXT("");
@@ -745,7 +745,7 @@ bool UNetworkManager::SellItem(int32 UserID, int32 ItemID, int32 ItemCount, int3
 		UserID, ItemID, ItemCount);
 
 	// 판매 요청 패킷 생성 (TransactionType = 1: 판매)
-	TArray<uint8> Packet = ClientPacketManager->CreateShopTransactionRequest(UserID, ItemID, ItemCount, 1);
+	TArray<uint8> Packet = ClientPacketManager->CreateShopTransactionRequest(UserID, StoreID, ItemID, ItemCount, 1);
 	if (Packet.Num() == 0 || !SendPacketData(Packet))
 	{
 		OutMessage = TEXT("아이템 판매 요청 실패");

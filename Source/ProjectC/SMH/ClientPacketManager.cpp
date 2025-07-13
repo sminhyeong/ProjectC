@@ -481,7 +481,7 @@ TArray<uint8> UClientPacketManager::CreateStoreItemsRequest(int32 ShopID)
     }
 }
 
-TArray<uint8> UClientPacketManager::CreateShopTransactionRequest(int32 UserID, int32 ItemID, int32 ItemCount, int32 TransactionType)
+TArray<uint8> UClientPacketManager::CreateShopTransactionRequest(int32 UserID, int32 StoreID, int32 ItemID, int32 ItemCount, int32 TransactionType)
 {
     ClearError();
 
@@ -489,6 +489,12 @@ TArray<uint8> UClientPacketManager::CreateShopTransactionRequest(int32 UserID, i
     if (UserID <= 0)
     {
         SetError(TEXT("Invalid UserID for shop transaction"));
+        return TArray<uint8>();
+    }
+
+    if (StoreID <= 0)
+    {
+        SetError(TEXT("Invalid StoreID for shop transaction"));
         return TArray<uint8>();
     }
 
@@ -518,6 +524,7 @@ TArray<uint8> UClientPacketManager::CreateShopTransactionRequest(int32 UserID, i
         auto shopTransactionRequest = CreateC2S_ShopTransaction(
             builder,
             static_cast<uint32_t>(UserID),
+            static_cast<uint32_t>(StoreID),
             static_cast<uint32_t>(ItemID),
             static_cast<uint32_t>(ItemCount),
             static_cast<uint32_t>(TransactionType)

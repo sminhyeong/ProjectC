@@ -163,7 +163,7 @@ public:
     TArray<uint8> CreateStoreItemsRequest(int32 ShopID);
 
     // 상점 거래 요청 생성 (C2S)
-    TArray<uint8> CreateShopTransactionRequest(int32 UserID, int32 ItemID, int32 ItemCount, int32 TransactionType);
+    TArray<uint8> CreateShopTransactionRequest(int32 UserID, int32 StoreID, int32 ItemID, int32 ItemCount, int32 TransactionType);
 
     // === 서버 응답 패킷 파싱 (S2C) ===
 

@@ -92,10 +92,10 @@ public:
 
     //Store 거래 관련 함수들
     UFUNCTION(BlueprintCallable, Category = "Network|Shop")
-    bool PurchaseItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage);
+    bool PurchaseItem(int32 UserID, int32 StoreID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage);
 
     UFUNCTION(BlueprintCallable, Category = "Network|Shop")
-    bool SellItem(int32 UserID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage);
+    bool SellItem(int32 UserID, int32 StoreID, int32 ItemID, int32 ItemCount, int32& OutNewGold, FString& OutMessage);
 
     //단일 아이템 정보 조회
     UFUNCTION(BlueprintCallable, Category = "Network|Item")

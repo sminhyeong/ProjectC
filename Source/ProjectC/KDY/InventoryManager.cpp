@@ -177,7 +177,30 @@ void AInventoryManager::S2C_UpdateInventoryWidget_Implementation(UInventoryWidge
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("S2C_UpdateInventoryWidget::InventoryWindow is null"));
+		switch (InventoryWindowWidget->NowWatchCategory)
+		{
+		case EItemCategory::WEAPON:
+		{
+			InventoryWindowWidget->UpdateItemList(WeaponList);
+			break;
+		}
+		case EItemCategory::ARMOR:
+		{
+			InventoryWindowWidget->UpdateItemList(ArmorList);
+			break;
+		}
+		case EItemCategory::CONSUME:
+		{
+			InventoryWindowWidget->UpdateItemList(ConsumeList);
+			break;
+		}
+		default:
+		{
+			break;
+		}
+		}
+
+		//UE_LOG(LogTemp, Warning, TEXT("S2C_UpdateInventoryWidget::InventoryWindow is null"));
 	}
 }
 

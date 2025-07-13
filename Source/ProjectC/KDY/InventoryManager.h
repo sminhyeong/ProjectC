@@ -45,8 +45,8 @@ public:
 
 	// InventoryManager에 저장된 정보로 Widget을 갱신하는 함수
 	UFUNCTION(Client, Reliable, BlueprintCallable)
-	void S2C_UpdateInventoryWidget();
-	void S2C_UpdateInventoryWidget_Implementation();
+	void S2C_UpdateInventoryWidget(UInventoryWidget* InventoryWindow);
+	void S2C_UpdateInventoryWidget_Implementation(UInventoryWidget* InventoryWindow);
 
 	// 서버에서 인벤토리 확인 후 가득 찼다면 이 함수 호출
 	UFUNCTION(BlueprintNativeEvent)

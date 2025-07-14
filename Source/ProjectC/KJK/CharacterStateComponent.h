@@ -62,7 +62,8 @@ public:
 
 	float AddShield(float Damage,float& OutShield);
 
-
+	UFUNCTION(BlueprintCallable,BlueprintPure)
+	bool IsDeath();
 
 	//캐릭터 스테이트
 	UFUNCTION(BlueprintCallable)

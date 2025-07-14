@@ -12,7 +12,7 @@ UCharacterStateComponent::UCharacterStateComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 
-	SetIsReplicatedByDefault(true); 
+	SetIsReplicatedByDefault(true);
 
 
 	// ...
@@ -22,30 +22,30 @@ float UCharacterStateComponent::AddDamage(float DMGAmount, float& OutHP, float& 
 {
 
 	if (DMGAmount <= 0.f || CurHP <= 0.f)
-	
+		return  0;
 
-		UE_LOG(LogTemp, Log, TEXT("AddDamage: %.1f"), DMGAmount);
-		if (CurShield > 0.f)
-		{
-			float ShieldDamage = FMath::Min(DMGAmount, CurShield);
-			CurShield -= ShieldDamage;
-			DMGAmount -= ShieldDamage;
-		}
-		// 남은 데미지를 체력에 적용
-		if (DMGAmount > 0.f)
-		{
-			CurHP -= DMGAmount;
-			CurHP = FMath::Max(0.f, CurHP);
+	UE_LOG(LogTemp, Log, TEXT("AddDamage: %.1f"), DMGAmount);
+	if (CurShield > 0.f)
+	{
+		float ShieldDamage = FMath::Min(DMGAmount, CurShield);
+		CurShield -= ShieldDamage;
+		DMGAmount -= ShieldDamage;
+	}
+	// 남은 데미지를 체력에 적용
+	if (DMGAmount > 0.f)
+	{
+		CurHP -= DMGAmount;
+		CurHP = FMath::Max(0.f, CurHP);
 
-		}
-		OutShield = CurShield;
-		OutHP = CurHP;
+	}
+	OutShield = CurShield;
+	OutHP = CurHP;
 
-		UE_LOG(LogTemp, Log, TEXT("HP: %.1f / %.1f | Shield: %.1f / %.1f"), OutHP, MaxHP, OutShield, MaxShield);
-		
-		return DMGAmount;
-		
-	
+	UE_LOG(LogTemp, Log, TEXT("HP: %.1f / %.1f | Shield: %.1f / %.1f"), OutHP, MaxHP, OutShield, MaxShield);
+
+	return DMGAmount;
+
+
 }
 
 //힐
@@ -55,12 +55,12 @@ float UCharacterStateComponent::AddHeal(float Amount, float& OutHP)
 	{
 		return CurHP;
 	}
-		CurHP += Amount;
-		CurHP = FMath::Min(CurHP, MaxHP);
-	
-		OutHP = CurHP;
+	CurHP += Amount;
+	CurHP = FMath::Min(CurHP, MaxHP);
+
+	OutHP = CurHP;
 	UE_LOG(LogTemp, Log, TEXT("AddHeal: %.1f -> HP: %.1f / %.1f"), Amount, CurHP, MaxHP);
-		return CurHP;
+	return CurHP;
 
 }
 
@@ -71,11 +71,11 @@ float UCharacterStateComponent::AddMP(float Amount, float& OutMP)
 	{
 		return CurMP;
 	}
-		CurMP += Amount;
-		CurMP = FMath::Min(CurMP, MaxMP);
+	CurMP += Amount;
+	CurMP = FMath::Min(CurMP, MaxMP);
 	OutMP = CurMP;
 	UE_LOG(LogTemp, Log, TEXT("AddMP: %.1f -> MP: %.1f / %.1f"), Amount, CurMP, MaxMP);
-		return CurMP;
+	return CurMP;
 }
 
 //MP 사용
@@ -85,12 +85,12 @@ float UCharacterStateComponent::UseMP(float Amount, float& OutMP)
 	{
 		return CurMP;
 	}
-		CurMP -= Amount;
-		CurMP = FMath::Max(0.f, CurMP);
-	
+	CurMP -= Amount;
+	CurMP = FMath::Max(0.f, CurMP);
+
 	OutMP = CurMP;
 	UE_LOG(LogTemp, Log, TEXT("UseMP: %.1f -> MP: %.1f / %.1f"), Amount, CurMP, MaxMP);
-		return CurMP;
+	return CurMP;
 }
 
 //실드 추가
@@ -100,19 +100,28 @@ float UCharacterStateComponent::AddShield(float Amount, float& OutShield)
 	{
 		return CurShield;
 	}
-		CurShield += Amount;
-		CurShield = FMath::Min(CurShield, MaxShield);
-	
+	CurShield += Amount;
+	CurShield = FMath::Min(CurShield, MaxShield);
+
 	OutShield = CurShield;
 	UE_LOG(LogTemp, Log, TEXT("AddShield: %.1f -> Shield: %.1f / %.1f"), Amount, CurShield, MaxShield);
-		return CurShield;
+	return CurShield;
+}
+bool UCharacterStateComponent::IsDeath()
+{
+	if (CurHP <= 0.f)
+	{
+		//CurHP = 0.f;
+		return true;
+	}
+	return false;
 }
 //SetUpCharacter
 void UCharacterStateComponent::InitCharacterData(FCharacterState CharData)
 {
 	BaseState = CharData;
 
-	MaxHP = CharData.MaxStats.MaxHP;	
+	MaxHP = CharData.MaxStats.MaxHP;
 	CurHP = MaxHP;
 	MaxMP = CharData.MaxStats.MaxMP;
 	CurMP = MaxMP;
@@ -167,7 +176,7 @@ void UCharacterStateComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
+
 }
 
 

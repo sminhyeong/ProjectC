@@ -8,7 +8,6 @@ AObjectSpawner::AObjectSpawner()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 	SpawnComponent = CreateDefaultSubobject<UObjectSpawnComponent>(TEXT("SpawnComponent"));
 }
 
@@ -16,7 +15,6 @@ AObjectSpawner::AObjectSpawner()
 void AObjectSpawner::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame

@@ -17,11 +17,13 @@ UObjectSpawnComponent::UObjectSpawnComponent()
 
 void UObjectSpawnComponent::SpawnObjectAt()
 {
-	if (!GetOwner() || !GetOwner()->HasAuthority())
+	if (SpawnObjectType != ESpawnObjectType::Chest)
 	{
-		return;
+		if (!GetOwner() || !GetOwner()->HasAuthority())
+		{
+			return;
+		}
 	}
-
 	TSubclassOf<AActor> SelectedClass = GetSpawnClassFromType();
 	if (!SelectedClass)
 	{
@@ -29,7 +31,7 @@ void UObjectSpawnComponent::SpawnObjectAt()
 		return;
 	}
 	FTransform SpawnTransform = GetOwner()->GetTransform();
-	GetWorld()->SpawnActor<AActor>(SelectedClass,SpawnTransform);
+	GetWorld()->SpawnActor<AActor>(SelectedClass, SpawnTransform);
 }
 
 
@@ -37,9 +39,9 @@ void UObjectSpawnComponent::SpawnObjectAt()
 void UObjectSpawnComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (bAutoSpawn && !HasSpawned)
-	{	
+	{
 		SpawnObjectAt();
 		HasSpawned = true;
 	}

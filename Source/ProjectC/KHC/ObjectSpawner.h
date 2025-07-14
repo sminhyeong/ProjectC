@@ -17,7 +17,7 @@ public:
 	AObjectSpawner();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UObjectSpawnComponent* SpawnComponent;
+	TObjectPtr<UObjectSpawnComponent> SpawnComponent;
 
 protected:
 	// Called when the game starts or when spawned

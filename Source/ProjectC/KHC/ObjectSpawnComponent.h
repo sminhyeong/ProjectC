@@ -43,10 +43,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Spawn")
 	TSubclassOf<AActor> SpawnClass;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "Spawn")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Spawn")
 	ESpawnObjectType SpawnObjectType = ESpawnObjectType::None;
 
-	UPROPERTY(EditAnywhere, Category = "Spawn")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
 	TMap<ESpawnObjectType, TSubclassOf<AActor>> SpawnClassMap;
 
 	TSubclassOf<AActor> GetSpawnClassFromType() const;

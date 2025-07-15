@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "ObjectSpawnComponent.h"
@@ -27,11 +27,41 @@ void UObjectSpawnComponent::SpawnObjectAt()
 	TSubclassOf<AActor> SelectedClass = GetSpawnClassFromType();
 	if (!SelectedClass)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("���õ� Ŭ������ �����ϴ�."));
+		UE_LOG(LogTemp, Warning, TEXT("선택된 클래스가 없습니다."));
 		return;
 	}
 	FTransform SpawnTransform = GetOwner()->GetTransform();
-	GetWorld()->SpawnActor<AActor>(SelectedClass, SpawnTransform);
+	AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(SelectedClass, SpawnTransform);
+	if (!SpawnedActor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SpawnedActor가 nullptr입니다."));
+		return;
+	}
+
+	if (SpawnObjectType == ESpawnObjectType::Monster)
+	{
+		// 리플렉션을 통해 변수 찾기 및 설정
+		UClass* SpawnedClass = SpawnedActor->GetClass();
+
+		FProperty* SpawnerProperty = SpawnedClass->FindPropertyByName(FName("Spawner"));
+		if (SpawnerProperty)
+		{
+			FObjectProperty* ObjectProp = CastField<FObjectProperty>(SpawnerProperty);
+			if (ObjectProp && ObjectProp->PropertyClass->IsChildOf(AActor::StaticClass()))
+			{
+				ObjectProp->SetObjectPropertyValue_InContainer(SpawnedActor, GetOwner());
+				UE_LOG(LogTemp, Log, TEXT("Spawner 정보를 보스에게 전달 완료"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Spawner 프로퍼티 타입이 올바르지 않습니다."));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SpawnedActor에 Spawner 프로퍼티가 없습니다."));
+		}
+	}
 }
 
 
@@ -65,7 +95,7 @@ TSubclassOf<AActor> UObjectSpawnComponent::GetSpawnClassFromType() const
 		return *FoundClass;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("SpawnClassMap�� �ش� Ÿ���� ���ų� ��� �ֽ��ϴ�!"));
+	UE_LOG(LogTemp, Warning, TEXT("SpawnClassMap에 해당 타입이 없거나 비어 있습니다!"));
 	return nullptr;
 }
 

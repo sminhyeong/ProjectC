@@ -77,15 +77,15 @@ public:
 	//변수
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_CurHP, EditAnywhere, Category = "State")
 	float CurHP;
-	UPROPERTY(BlueprintReadWrite,  EditAnywhere, Category = "State")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_MaxHP, EditAnywhere, Category = "State")
 	float MaxHP;
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_CurShield, EditAnywhere, Category = "State")
 	float CurShield;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_MaxShield, EditAnywhere, Category = "State")
 	float MaxShield;
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_CurMP, EditAnywhere, Category = "State")
 	float CurMP;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "State")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_MaxMP, EditAnywhere,  Category = "State")
 	float MaxMP;
 
 	// 들어오는 데이터가 구조체로 저장되는 변수들
@@ -95,13 +95,20 @@ public:
 
 
 	//rep함수
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnRep_CurHP();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnRep_CurMP();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnRep_CurShield();
+	UFUNCTION(BlueprintCallable)
+	void OnRep_MaxHP();
 
+	UFUNCTION(BlueprintCallable)
+	void OnRep_MaxMP();
+
+	UFUNCTION(BlueprintCallable)
+	void OnRep_MaxShield();
 };

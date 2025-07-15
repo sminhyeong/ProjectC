@@ -22,7 +22,10 @@ float UCharacterStateComponent::AddDamage(float DMGAmount, float& OutHP, float& 
 {
 
 	if (DMGAmount <= 0.f || CurHP <= 0.f)
+	{
+		CurHP = 0.f;
 		return  0;
+	}
 
 	UE_LOG(LogTemp, Log, TEXT("AddDamage: %.1f"), DMGAmount);
 	if (CurShield > 0.f)
@@ -159,6 +162,18 @@ void UCharacterStateComponent::OnRep_CurShield()
 {
 	UE_LOG(LogTemp, Log, TEXT("CurShield changed to %.1f"), CurShield);
 
+}
+
+void UCharacterStateComponent::OnRep_MaxHP()
+{
+}
+
+void UCharacterStateComponent::OnRep_MaxMP()
+{
+}
+
+void UCharacterStateComponent::OnRep_MaxShield()
+{
 }
 
 void UCharacterStateComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

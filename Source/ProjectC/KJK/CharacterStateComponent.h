@@ -21,7 +21,10 @@
  
 */
 
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, CurrentHP, float, MaxHP);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnShieldChanged, float, CurrentShield, float, MaxShield);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMPChanged, float, CurrentMP, float, MaxMP);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterDeath, AActor*, DeadCharacter);
 //----------------------------//
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTC_API UCharacterStateComponent : public UActorComponent
@@ -35,6 +38,10 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	
+	// 이 함수 추가!
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 
 public:	
 	// Called every frame
@@ -93,22 +100,42 @@ public:
 	FCharacterState AdditionalState;
 	FSkillClass Skill;
 
+	// Dispatcher 변수들
+	UPROPERTY(BlueprintAssignable)
+	FOnHealthChanged OnHealthChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnShieldChanged OnShieldChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnMPChanged OnMPChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnCharacterDeath OnCharacterDeath;
+
 
 	//rep함수
 	UFUNCTION(BlueprintCallable)
-	void OnRep_CurHP();
+	virtual void OnRep_CurHP();
 
 	UFUNCTION(BlueprintCallable)
-	void OnRep_CurMP();
+	virtual void OnRep_CurMP();
 
 	UFUNCTION(BlueprintCallable)
-	void OnRep_CurShield();
+	virtual void OnRep_CurShield();
 	UFUNCTION(BlueprintCallable)
-	void OnRep_MaxHP();
+	virtual void OnRep_MaxHP();
 
 	UFUNCTION(BlueprintCallable)
-	void OnRep_MaxMP();
+	virtual void OnRep_MaxMP();
 
 	UFUNCTION(BlueprintCallable)
-	void OnRep_MaxShield();
+	virtual void OnRep_MaxShield();
+
+private:
+	// Dispatcher 호출을 위한 헬퍼 함수들
+	void BroadcastHealthChanged();
+	void BroadcastShieldChanged();
+	void BroadcastMPChanged();
+	void BroadcastCharacterDeath();
 };

@@ -131,7 +131,7 @@ void UCharacterStateComponent::InitCharacterData(FCharacterState CharData)
 	MaxShield = CharData.MaxStats.MaxShield;
 	CurShield = MaxShield;
 
-	UE_LOG(LogTemp, Log, TEXT("InitCharacterData -> HP: %.1f | MP: %.1f | Shield: %.1f"), CurHP, CurMP, CurShield);
+	UE_LOG(LogTemp, Warning, TEXT("InitCharacterData -> HP: %.1f | MP: %.1f | Shield: %.1f"), CurHP, MaxHP, CurShield);
 }
 
 //캐릭터 상태 셋팅
@@ -150,40 +150,44 @@ void UCharacterStateComponent::SetAdditionalState(FCharacterState AddState)
 
 void UCharacterStateComponent::OnRep_CurHP()
 {
-	UE_LOG(LogTemp, Log, TEXT("CurHP changed to %.1f"), CurHP);
+	BroadcastHealthChanged();
 }
 
 void UCharacterStateComponent::OnRep_CurMP()
 {
-	UE_LOG(LogTemp, Log, TEXT("CurHP changed to %.1f"), CurMP);
+	BroadcastMPChanged();
 }
 
 void UCharacterStateComponent::OnRep_CurShield()
 {
-	UE_LOG(LogTemp, Log, TEXT("CurShield changed to %.1f"), CurShield);
-
+	BroadcastShieldChanged();
 }
 
 void UCharacterStateComponent::OnRep_MaxHP()
 {
+	BroadcastHealthChanged();
 }
 
 void UCharacterStateComponent::OnRep_MaxMP()
 {
+	BroadcastMPChanged();
 }
 
 void UCharacterStateComponent::OnRep_MaxShield()
 {
+	BroadcastShieldChanged();
 }
 
 void UCharacterStateComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(UCharacterStateComponent, MaxHP);      // 이게 빠져있었음!
 	DOREPLIFETIME(UCharacterStateComponent, CurHP);
-	DOREPLIFETIME(UCharacterStateComponent, CurMP);
+	DOREPLIFETIME(UCharacterStateComponent, MaxShield);  // 이것도 빠져있었음!
 	DOREPLIFETIME(UCharacterStateComponent, CurShield);
-	// 다른 변수들도 필요하면 추가
+	DOREPLIFETIME(UCharacterStateComponent, MaxMP);      // 이것도 빠져있었음!
+	DOREPLIFETIME(UCharacterStateComponent, CurMP);
 }
 // Called when the game starts
 void UCharacterStateComponent::BeginPlay()
@@ -203,3 +207,34 @@ void UCharacterStateComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	// ...
 }
 
+void UCharacterStateComponent::BroadcastHealthChanged()
+{
+	if (OnHealthChanged.IsBound())
+	{
+		OnHealthChanged.Broadcast(CurHP, MaxHP);
+	}
+}
+
+void UCharacterStateComponent::BroadcastShieldChanged()
+{
+	if (OnShieldChanged.IsBound())
+	{
+		OnShieldChanged.Broadcast(CurShield, MaxShield);
+	}
+}
+
+void UCharacterStateComponent::BroadcastMPChanged()
+{
+	if (OnMPChanged.IsBound())
+	{
+		OnMPChanged.Broadcast(CurMP, MaxMP);
+	}
+}
+
+void UCharacterStateComponent::BroadcastCharacterDeath()
+{
+	if (OnCharacterDeath.IsBound())
+	{
+		OnCharacterDeath.Broadcast(GetOwner());
+	}
+}

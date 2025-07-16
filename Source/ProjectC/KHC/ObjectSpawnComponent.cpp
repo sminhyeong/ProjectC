@@ -40,16 +40,24 @@ void UObjectSpawnComponent::SpawnObjectAt()
 
 	if (SpawnObjectType == ESpawnObjectType::Monster)
 	{
+		static FName PortalSpawnerName(TEXT("DungeonPortalSpawner"));
+
+		FObjectProperty* ObjectProp = FindFProperty<FObjectProperty>(SpawnedActor->GetClass(), PortalSpawnerName);
+		if (ObjectProp && ObjectProp->PropertyClass->IsChildOf(AActor::StaticClass()))
+		{
+			ObjectProp->SetObjectPropertyValue_InContainer(SpawnedActor, PortalSpawnerActor);
+		}
+
 		// 리플렉션을 통해 변수 찾기 및 설정
 		UClass* SpawnedClass = SpawnedActor->GetClass();
 
 		FProperty* SpawnerProperty = SpawnedClass->FindPropertyByName(FName("Spawner"));
 		if (SpawnerProperty)
 		{
-			FObjectProperty* ObjectProp = CastField<FObjectProperty>(SpawnerProperty);
-			if (ObjectProp && ObjectProp->PropertyClass->IsChildOf(AActor::StaticClass()))
+			FObjectProperty* ObjectProp2 = CastField<FObjectProperty>(SpawnerProperty);
+			if (ObjectProp2 && ObjectProp2->PropertyClass->IsChildOf(AActor::StaticClass()))
 			{
-				ObjectProp->SetObjectPropertyValue_InContainer(SpawnedActor, GetOwner());
+				ObjectProp2->SetObjectPropertyValue_InContainer(SpawnedActor, GetOwner());
 				UE_LOG(LogTemp, Log, TEXT("Spawner 정보를 보스에게 전달 완료"));
 			}
 			else

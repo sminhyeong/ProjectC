@@ -49,6 +49,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
 	TMap<ESpawnObjectType, TSubclassOf<AActor>> SpawnClassMap;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
+	AActor* PortalSpawnerActor;
+
 	TSubclassOf<AActor> GetSpawnClassFromType() const;
 
 	bool HasSpawned = false;

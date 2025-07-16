@@ -17,20 +17,27 @@ UObjectSpawnComponent::UObjectSpawnComponent()
 
 void UObjectSpawnComponent::SpawnObjectAt()
 {
+	TSubclassOf<AActor> SelectedClass = GetSpawnClassFromType();
+	FTransform SpawnTransform;
 	if (SpawnObjectType != ESpawnObjectType::Chest)
 	{
 		if (!GetOwner() || !GetOwner()->HasAuthority())
 		{
 			return;
 		}
+		SpawnTransform= GetOwner()->GetTransform();
 	}
-	TSubclassOf<AActor> SelectedClass = GetSpawnClassFromType();
+	else
+	{
+		FTransform temp = GetOwner()->GetTransform();
+		temp.SetLocation(FVector(temp.GetLocation().X, temp.GetLocation().Y, -1420));
+		SpawnTransform = temp;
+	}
 	if (!SelectedClass)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("선택된 클래스가 없습니다."));
 		return;
 	}
-	FTransform SpawnTransform = GetOwner()->GetTransform();
 	AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(SelectedClass, SpawnTransform);
 	if (!SpawnedActor)
 	{

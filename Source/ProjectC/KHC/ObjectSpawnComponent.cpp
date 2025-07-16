@@ -4,6 +4,7 @@
 #include "ObjectSpawnComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
 
 // Sets default values for this component's properties
 UObjectSpawnComponent::UObjectSpawnComponent()
@@ -38,15 +39,22 @@ void UObjectSpawnComponent::SpawnObjectAt()
 		UE_LOG(LogTemp, Warning, TEXT("선택된 클래스가 없습니다."));
 		return;
 	}
-	AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(SelectedClass, SpawnTransform);
-	if (!SpawnedActor)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("SpawnedActor가 nullptr입니다."));
-		return;
-	}
+	
 
 	if (SpawnObjectType == ESpawnObjectType::Monster)
 	{
+		AActor* SpawnedActor = UAIBlueprintHelperLibrary::SpawnAIFromClass(GetWorld(), SpawnClass, BehaviorTree, SpawnTransform.GetLocation());
+		if (!BehaviorTree)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("선택된 BT가 없습니다."));
+			return;
+		}
+		if (!SpawnedActor)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SpawnedActor가 nullptr입니다."));
+			return;
+		}
+
 		static FName PortalSpawnerName(TEXT("DungeonPortalSpawner"));
 
 		FObjectProperty* ObjectProp = FindFProperty<FObjectProperty>(SpawnedActor->GetClass(), PortalSpawnerName);
@@ -75,6 +83,15 @@ void UObjectSpawnComponent::SpawnObjectAt()
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("SpawnedActor에 Spawner 프로퍼티가 없습니다."));
+		}
+	}
+	else
+	{
+		AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(SelectedClass, SpawnTransform);
+		if (!SpawnedActor)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SpawnedActor가 nullptr입니다."));
+			return;
 		}
 	}
 }

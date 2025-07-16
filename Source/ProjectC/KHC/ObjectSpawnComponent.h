@@ -7,6 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "ObjectSpawnComponent.generated.h"
 
+class UBehaviorTree;
+
 UENUM(BlueprintType)
 enum class ESpawnObjectType : uint8
 {
@@ -41,7 +43,7 @@ public:
 	bool bAutoSpawn = false;
 
 	UPROPERTY(EditAnywhere, Category = "Spawn")
-	TSubclassOf<AActor> SpawnClass;
+	TSubclassOf<APawn> SpawnClass;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Spawn")
 	ESpawnObjectType SpawnObjectType = ESpawnObjectType::None;
@@ -53,6 +55,9 @@ public:
 	AActor* PortalSpawnerActor;
 
 	TSubclassOf<AActor> GetSpawnClassFromType() const;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
+	TObjectPtr<UBehaviorTree> BehaviorTree;
 
 	bool HasSpawned = false;
 };

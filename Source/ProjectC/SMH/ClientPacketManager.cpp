@@ -4,7 +4,6 @@
 #include "../UserEvent_generated.h"
 
 #if PLATFORM_WINDOWS
-#define NOMINMAX  // min, max 매크로 충돌 방지
 #include <windows.h>
 #undef NOMINMAX
 #endif

@@ -13,6 +13,8 @@ public class ProjectC : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
         PublicIncludePaths.AddRange(new string[] { "flatbuffers" });   //flatbuffers, etc
+        
+        bEnableExceptions = true;
 
         if (Target.Platform == UnrealTargetPlatform.Win64)
         {

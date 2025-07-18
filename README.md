@@ -36,6 +36,7 @@
   - DB서버 구축
   - 로그인 및 회원가입 시스템
   - 게임 서버 생성 기능
+  - 스토어 상호작용 로직
 - [kwon-h-chan](https://github.com/kwon-h-chan)
   - 던전 맵
 - [9dyy](https://github.com/9dyy)
@@ -43,6 +44,7 @@
   - 스토어 위젯 작업
 - [Alolong](https://github.com/Alolong)
   - 적 AI 구현
+  - 플레이어 스테이트 관련 로직
 - [wonsub](https://github.com/wonsub)
   - 플레이어 스킬 시스템
 - [Yang470404](https://github.com/Yang470404)

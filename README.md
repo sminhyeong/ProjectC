@@ -39,6 +39,7 @@
   - 스토어 상호작용 로직
 - [kwon-h-chan](https://github.com/kwon-h-chan)
   - 던전 맵
+  - 보상 시스템 구현
 - [9dyy](https://github.com/9dyy)
   - 인벤토리
   - 스토어 위젯 작업
@@ -47,8 +48,10 @@
   - 플레이어 스테이트 관련 로직
 - [wonsub](https://github.com/wonsub)
   - 플레이어 스킬 시스템
+  - 퀵슬롯 시스템
 - [Yang470404](https://github.com/Yang470404)
-  - 로비 맵
+  - 로비 및 타이틀 맵 작성 및 디자인
+  - 포털 작업
 
 ### 사용한 에셋
 

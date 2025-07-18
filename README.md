@@ -42,3 +42,6 @@
 - 플레이어 스킬 아이콘 - 리그오브레전드 공식 홈페이지
   - [사일러스 E(도주/억압)](https://www.leagueoflegends.com/ko-kr/champions/sylas/)
   - [블리츠크랭크 Q(로켓 손)](https://www.leagueoflegends.com/ko-kr/champions/blitzcrank/)
+ 
+### 게임 플레이 영상
+https://drive.google.com/file/d/1twP7SjYpa8HtX_3YqSBscnrZxgKB3n41/view?usp=drive_link

@@ -8,7 +8,9 @@
 
 - 개발 엔진 : UnrealEngine 5.5
 
-- 게임 플레이 영상 : [![영상제목](영상 썸네일)](https://drive.google.com/file/d/1twP7SjYpa8HtX_3YqSBscnrZxgKB3n41/view?usp=drive_link)
+- 게임 플레이 영상
+
+  [![Prorect C 시연영상](http://img.youtube.com/vi/q2ViLK2-zz8/0.jpg)](https://youtu.be/q2ViLK2-zz8)
 
 ## 게임 구조 : 리슨서버형식의 게임 서버 및 클라이언트
 
@@ -34,6 +36,12 @@
 
 - 로비 및 전투맵 하늘 - [Cartoon Sky Shader](https://www.fab.com/listings/2bcc9fb8-fb7e-45ad-95b5-caa95679c408)
 - 로비 맵 - [Stylized Catcafe 110 Asset Pack](https://www.fab.com/listings/bd81ea3d-9a9e-4c0f-a847-cadb5cc46276)
+- 전투 맵
+  - 화로 불 - [M5 VFX Vol2. Fire and Flames(Niagara)](https://fab.com/s/2b919185c054)
+  - 전투 지역 - [Boss Fight Arena/PVP Arena](https://www.fab.com/listings/772c0ecd-11e4-43bd-aa83-0f90ca2b8ac1)
+- 맵 이동 포탈 - [Stylized Portals VFX](https://www.fab.com/listings/e3cb6293-e29f-4b94-810a-65daf84ffec9)
+- 보상 상자 - [Chest](https://www.fab.com/listings/0be07664-3b64-441d-8164-2fc04c11eea5)
+- 허수아비 - [Scarecrow](https://www.fab.com/listings/3a1b4b01-e243-4831-a23d-58c245e52b05)
 - 인벤토리 및 스토어 - [GUI Parts](https://www.fab.com/ko/listings/695e149d-93e3-42bb-b021-4f1bbf6eac2a)
 - 아이템 아이콘 - [60 Free Icons](https://www.fab.com/ko/listings/fc9f4a87-3168-4c9b-a71c-89b4bf31692e)
 - 보스 몬스터 - [Paragon: Sevarog](https://www.fab.com/listings/a4882b5e-cfad-4830-a3dd-46a6c31a79b2)

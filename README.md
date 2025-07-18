@@ -1,3 +1,5 @@
+# Project C
+
 - 주제 : 멀티 보스 레이드 컨텐츠(메이플, 로스트 아크, 마비노기 모바일 등에 있는 레이드 컨텐츠 구현)
 
 - 프로젝트 기간 : 2025년 7월 1일 ~ 2025년 7월 18일
@@ -6,12 +8,11 @@
 
 - 개발 엔진 : UnrealEngine 5.5
 
-- 게임 플레이 영상 : [![영상제목](영상 썸네일)](영상 링크) 추가 예정
+- 게임 플레이 영상 : [![영상제목](영상 썸네일)](https://drive.google.com/file/d/1twP7SjYpa8HtX_3YqSBscnrZxgKB3n41/view?usp=drive_link)
 
+## 게임 구조 : 리슨서버형식의 게임 서버 및 클라이언트
 
-게임 구조 : 리슨서버형식의 게임 서버 및 클라이언트
-===============================================================================================
-**게임 주요 기능**
+### 게임 주요 기능
 1. Tiltle Map : 로그인, 회원 가입, 게임 서버 생성, 게임서버 게임 서버 리스트 확인, 게임 서버 진입
 2. Lobby Map : 상점, 아이템 구매 및 판매, 던전 진입 포탈
 3. Dungeon Map : Boss Monster, 입구 옆 로비로 탈출용 포탈, Boss전 클리어 시 개인별 보상 상장, Boss전 클리어 후 던전 나가기 포탈
@@ -21,7 +22,7 @@
 7. 몬스터가 플레이어 인식 시 Boss Hp Bar 표시 및 Boss 사망 시 Boss Hp Bar 비표시로 변경
 
 
-**DB서버 구현**
+### DB서버 구현
 - [DB Account Server Git](https://github.com/sminhyeong/GameDatabaseServer.git)
 - Item관련 데이터를 처리함
 - C++ DB Account서버와 언리얼 엔진간의 TCP통신을 통한 데이터 주고 받는 형식
@@ -42,6 +43,4 @@
 - 플레이어 스킬 아이콘 - 리그오브레전드 공식 홈페이지
   - [사일러스 E(도주/억압)](https://www.leagueoflegends.com/ko-kr/champions/sylas/)
   - [블리츠크랭크 Q(로켓 손)](https://www.leagueoflegends.com/ko-kr/champions/blitzcrank/)
- 
-### 게임 플레이 영상
-https://drive.google.com/file/d/1twP7SjYpa8HtX_3YqSBscnrZxgKB3n41/view?usp=drive_link
+

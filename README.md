@@ -22,3 +22,32 @@ C++ DB Account서버와 언리얼 엔진간의 TCP통신을 통한 데이터 주
 
 사용한 Packet: FlatBuffer를 이용하여 Packet을 구성하여 DB서버와 통신
 (Flat Buffer git: https://github.com/google/flatbuffers/releases)
+
+사용한 에셋
+
+공격 애니메이션
+https://www.fab.com/listings/b81b2df8-d7fd-4d16-a303-0b73c7053cdb
+
+무기
+https://www.fab.com/listings/d5be0dc9-1a41-4be2-a63a-5ed436f3445d
+
+로비 및 전투맵 하늘
+Cartoon Sky Shader - https://www.fab.com/listings/2bcc9fb8-fb7e-45ad-95b5-caa95679c408
+
+로비 맵
+Stylized Catcafe 110 Asset Pack - https://www.fab.com/listings/bd81ea3d-9a9e-4c0f-a847-cadb5cc46276
+
+인벤토리 및 스토어
+GUI Parts - https://www.fab.com/ko/listings/695e149d-93e3-42bb-b021-4f1bbf6eac2a
+
+보스 몬스터
+Paragon: Sevarog - https://www.fab.com/listings/a4882b5e-cfad-4830-a3dd-46a6c31a79b2
+
+플레이어
+Creative Characters FREE - Animated Low Poly 3D Models - https://www.fab.com/listings/94fd60a2-5659-4fc4-af1d-a8cdd2681c2e
+
+스킬 아이콘
+https://www.leagueoflegends.com/ko-kr/champions/sylas/ 사일러스 E(도주/억압)
+
+https://www.leagueoflegends.com/ko-kr/champions/blitzcrank/ 블리츠크랭크 Q(로켓 손)
+

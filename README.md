@@ -31,12 +31,28 @@
 - 통신은 언리얼엔진의 Game Mode와 DB서버간 통신을 통해 데이터 주고 받도록 구성
 - 사용한 Packet: [Flat Buffer](https://github.com/google/flatbuffers/releases)를 이용하여 Packet을 구성하여 DB서버와 통신 
 
+### 담당한 작업
+- [sminhyeong](https://github.com/sminhyeong) - 팀장
+  - DB서버 구축
+  - 로그인 및 회원가입 시스템
+  - 게임 서버 생성 기능
+- [kwon-h-chan](https://github.com/kwon-h-chan)
+  - 던전 맵
+- [9dyy](https://github.com/9dyy)
+  - 인벤토리
+  - 스토어 위젯 작업
+- [Alolong](https://github.com/Alolong)
+  - 적 AI 구현
+- [wonsub](https://github.com/wonsub)
+  - 플레이어 스킬 시스템
+- [Yang470404](https://github.com/Yang470404)
+  - 로비 맵
 
 ### 사용한 에셋
 
 - 로비 및 전투맵 하늘 - [Cartoon Sky Shader](https://www.fab.com/listings/2bcc9fb8-fb7e-45ad-95b5-caa95679c408)
 - 로비 맵 - [Stylized Catcafe 110 Asset Pack](https://www.fab.com/listings/bd81ea3d-9a9e-4c0f-a847-cadb5cc46276)
-- 전투 맵
+- 던전 맵
   - 화로 불 - [M5 VFX Vol2. Fire and Flames(Niagara)](https://fab.com/s/2b919185c054)
   - 전투 지역 - [Boss Fight Arena/PVP Arena](https://www.fab.com/listings/772c0ecd-11e4-43bd-aa83-0f90ca2b8ac1)
 - 맵 이동 포탈 - [Stylized Portals VFX](https://www.fab.com/listings/e3cb6293-e29f-4b94-810a-65daf84ffec9)
